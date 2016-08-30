@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package collector;
+package lightstep.collector;
 option go_package = "collectorpb";
 
 import "google/protobuf/timestamp.proto";
