@@ -39,8 +39,8 @@ message Span {
     SpanContext span_context = 1;
     string operation_name = 2;
     repeated Reference references = 3;
-    google.protobuf.Timestamp start_timestamp = 4;
-    uint32 duration_micros = 5;
+    google.protobuf.Timestamp start_timestamp = 4; 
+    uint64 duration_micros = 5; 
     repeated KeyValue tags = 6;
     repeated Log logs = 7;
 }
