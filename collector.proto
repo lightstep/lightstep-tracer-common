@@ -40,7 +40,7 @@ message Span {
     string operation_name = 2;
     repeated Reference references = 3;
     google.protobuf.Timestamp start_timestamp = 4;
-    uint32 duration_micros = 5;
+    uint64 duration_micros = 5;
     repeated KeyValue tags = 6;
     repeated Log logs = 7;
 }
@@ -48,7 +48,7 @@ message Span {
 message Tracer {
   uint64 tracer_id = 1;
   repeated KeyValue tags = 4;
-} 
+}
 
 message MetricsSample {
   string name = 1;
@@ -64,7 +64,7 @@ message InternalMetrics {
   repeated Log logs = 3;
   repeated MetricsSample counts = 4;
   repeated MetricsSample gauges = 5;
-} 
+}
 
 message Auth {
   string access_token = 1;
