@@ -3,6 +3,11 @@ syntax = "proto3";
 package lightstep.collector;
 option go_package = "collectorpb";
 
+// Note: As of protobuf HEAD-b964976 (8/31/2016) the C++ generated code will not
+// compile for map<> types in the default mode or when optimized for LITE_RUNTIME.
+// Only CODE_SIZE works:
+option optimize_for = CODE_SIZE;
+
 import "google/protobuf/timestamp.proto";
 
 message SpanContext {
