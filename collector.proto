@@ -75,7 +75,7 @@ message ReportRequest {
     Auth auth = 2;
     repeated Span spans = 3;
     uint32 timestamp_offset_micros = 5;
-    InternalMetrics internal_data = 6;
+    InternalMetrics internal_metrics = 6;
 }
 
 message Command {
