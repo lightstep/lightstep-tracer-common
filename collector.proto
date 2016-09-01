@@ -65,7 +65,7 @@ message MetricsSample {
 
 message InternalMetrics {
   google.protobuf.Timestamp start_timestamp = 1;
-  uint32 duration_micros = 2;
+  uint64 duration_micros = 2;
   repeated Log logs = 3;
   repeated MetricsSample counts = 4;
   repeated MetricsSample gauges = 5;
