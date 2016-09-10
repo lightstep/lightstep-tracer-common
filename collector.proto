@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package lightstep.collector;
 option go_package = "collectorpb";
-option objc_class_prefix = "LTS";
+option objc_class_prefix = "LSPB";
 
 // Note: As of protobuf HEAD-b964976 (8/31/2016) the C++ generated code will not
 // compile for map<> types in the default mode or when optimized for LITE_RUNTIME.
