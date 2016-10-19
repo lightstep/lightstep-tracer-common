@@ -20,6 +20,8 @@ message SpanContext {
 message KeyValue {
     string key = 1;
     oneof value {
+        // Holds arbitrary string data; well-formed JSON strings should go in
+        // json_value.
         string string_value = 2;
         int64 int_value = 3;
         double double_value = 4;
