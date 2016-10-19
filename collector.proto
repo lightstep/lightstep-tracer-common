@@ -20,10 +20,15 @@ message SpanContext {
 message KeyValue {
     string key = 1;
     oneof value {
-	string string_value = 2;
-	int64 int_value = 3;
-	double double_value = 4;
-	bool bool_value = 5;
+        // Holds arbitrary string data; well-formed JSON strings should go in
+        // json_value.
+        string string_value = 2;
+        int64 int_value = 3;
+        double double_value = 4;
+        bool bool_value = 5;
+        // Must be a well-formed JSON value. Truncated JSON should go in
+        // string_value.
+        string json_value = 6;
     }
 }
 
@@ -34,8 +39,8 @@ message Log {
 
 message Reference {
     enum Relationship {
-	CHILD_OF = 0;
-	FOLLOWS_FROM = 1;
+        CHILD_OF = 0;
+        FOLLOWS_FROM = 1;
     }
     Relationship relationship = 1;
     SpanContext span_context = 2;
@@ -59,8 +64,8 @@ message Tracer {
 message MetricsSample {
     string name = 1;
     oneof value {
-	int64 int_value = 2;
-	double double_value = 3;
+        int64 int_value = 2;
+        double double_value = 3;
     }
 }
 
