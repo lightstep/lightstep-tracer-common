@@ -56,8 +56,8 @@ message Span {
     repeated Log logs = 7;
 }
 
-message Tracer {
-    uint64 tracer_id = 1;
+message Reporter {
+    uint64 reporter_id = 1;
     repeated KeyValue tags = 4;
 }
 
@@ -82,7 +82,7 @@ message Auth {
 }
 
 message ReportRequest {
-    Tracer tracer = 1;
+    Reporter reporter = 1;
     Auth auth = 2;
     repeated Span spans = 3;
     uint32 timestamp_offset_micros = 5;
