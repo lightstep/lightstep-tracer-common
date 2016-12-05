@@ -17,7 +17,17 @@ message SpanContext {
     map<string, string> baggage = 3;
 }
 
-message KeyValue {
+message Tag {
+    string key = 1;
+    oneof value {
+        string string_value = 2;
+        int64 int_value = 3;
+        double double_value = 4;
+        bool bool_value = 5;
+    }
+}
+
+message LogField {
     string key = 1;
     oneof value {
         // Holds arbitrary string data; well-formed JSON strings should go in
@@ -34,7 +44,7 @@ message KeyValue {
 
 message Log {
     google.protobuf.Timestamp timestamp = 1;
-    repeated KeyValue keyvalues = 2;
+    repeated LogField fields = 2;
 }
 
 message Reference {
@@ -52,13 +62,13 @@ message Span {
     repeated Reference references = 3;
     google.protobuf.Timestamp start_timestamp = 4;
     uint64 duration_micros = 5;
-    repeated KeyValue tags = 6;
+    repeated Tag tags = 6;
     repeated Log logs = 7;
 }
 
 message Reporter {
     uint64 reporter_id = 1;
-    repeated KeyValue tags = 4;
+    repeated Tag tags = 4;
 }
 
 message MetricsSample {
