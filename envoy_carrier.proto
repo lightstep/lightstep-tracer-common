@@ -4,6 +4,8 @@
 
 syntax = "proto3";
 
+package lightstep.envoy;
+
 message EnvoyCarrier {
   fixed64 trace_id = 2;
   fixed64 span_id = 3;
