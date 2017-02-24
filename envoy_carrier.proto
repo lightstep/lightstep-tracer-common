@@ -1,7 +1,21 @@
+// EnvoyCarrier defined here is nearly identical to but NOT wire-compatible
+// with TracerState defined here:
+// https://github.com/opentracing/basictracer-go/blob/master/wire/wire.proto
+
 syntax = "proto3";
 
-package lightstep.envoy;
+message EnvoyCarrier {
+  repeated LegacyCarrierPair deprecated_context = 1;
 
+  fixed64 trace_id = 2;
+  fixed64 span_id = 3;
+  bool    sampled = 4;
+  map<string, string> baggage_items = 5;
+}
+
+// In Q4'16 and Q1'17 Envoy used a different type definition,
+// thus the appearance of `deprecated_context = 1` above.
+//
 // CarrierStruct stores a set of key-values containing an OpenTracing span
 // context, as carried by Envoy, suitably encoded as a serialized protocol
 // buffer for transport via an HTTP header.
@@ -12,11 +26,12 @@ package lightstep.envoy;
 //   "ot-tracer-spanid": 64 bit span identifier encoded in 16 hex bytes
 //   "ot-tracer-sampled": "true" or "false" if context is being sampled
 //   "ot-baggage-<key>": "<value>" for baggage items
-message CarrierStruct {
-  repeated CarrierPair context = 1;
-}
+//
+// message LegacyCarrierStruct {
+//   repeated LegacyCarrierPair context = 1;
+// }
 
-message CarrierPair {
+message LegacyCarrierPair {
   string key = 1;
   string value = 2;
 }
