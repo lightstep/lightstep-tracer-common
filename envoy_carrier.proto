@@ -5,12 +5,14 @@
 syntax = "proto3";
 
 message EnvoyCarrier {
-  repeated LegacyCarrierPair deprecated_context = 1;
-
   fixed64 trace_id = 2;
   fixed64 span_id = 3;
   bool    sampled = 4;
   map<string, string> baggage_items = 5;
+
+  // TODO: When Envoy has been upgraded everywhere, remove this
+  // field and the definition below.
+  repeated LegacyCarrierPair deprecated_context = 1;
 }
 
 // In Q4'16 and Q1'17 Envoy used a different type definition,
