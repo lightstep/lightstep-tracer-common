@@ -17,17 +17,8 @@ message SpanContext {
     map<string, string> baggage = 3;
 }
 
-message Tag {
-    string key = 1;
-    oneof value {
-        string string_value = 2;
-        int64 int_value = 3;
-        double double_value = 4;
-        bool bool_value = 5;
-    }
-}
-
-message LogField {
+// Represent both tags and log fields.
+message KeyValue {
     string key = 1;
     oneof value {
         // Holds arbitrary string data; well-formed JSON strings should go in
@@ -37,14 +28,14 @@ message LogField {
         double double_value = 4;
         bool bool_value = 5;
         // Must be a well-formed JSON value. Truncated JSON should go in
-        // string_value.
+        // string_value. Should not be used for tags.
         string json_value = 6;
     }
 }
 
 message Log {
     google.protobuf.Timestamp timestamp = 1;
-    repeated LogField fields = 2;
+    repeated KeyValue fields = 2;
 }
 
 message Reference {
@@ -62,13 +53,13 @@ message Span {
     repeated Reference references = 3;
     google.protobuf.Timestamp start_timestamp = 4;
     uint64 duration_micros = 5;
-    repeated Tag tags = 6;
+    repeated KeyValue tags = 6;
     repeated Log logs = 7;
 }
 
 message Reporter {
     uint64 reporter_id = 1;
-    repeated Tag tags = 4;
+    repeated KeyValue tags = 4;
 }
 
 message MetricsSample {
