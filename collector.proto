@@ -8,6 +8,9 @@ option java_package = "com.lightstep.tracer.grpc";
 
 import "google/protobuf/timestamp.proto";
 
+// TODO replace unsigned uint64s below with signed values, so we
+// can test for negative durations.
+
 message SpanContext {
     uint64 trace_id = 1;
     uint64 span_id = 2;
@@ -82,7 +85,7 @@ message ReportRequest {
     Reporter reporter = 1;
     Auth auth = 2;
     repeated Span spans = 3;
-    int32 timestamp_offset_micros = 5;
+    int64 timestamp_offset_micros = 5;
     InternalMetrics internal_metrics = 6;
 }
 
