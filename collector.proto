@@ -14,6 +14,7 @@ message SpanContext {
     map<string, string> baggage = 3;
 }
 
+// Represent both tags and log fields.
 message KeyValue {
     string key = 1;
     oneof value {
@@ -24,14 +25,14 @@ message KeyValue {
         double double_value = 4;
         bool bool_value = 5;
         // Must be a well-formed JSON value. Truncated JSON should go in
-        // string_value.
+        // string_value. Should not be used for tags.
         string json_value = 6;
     }
 }
 
 message Log {
     google.protobuf.Timestamp timestamp = 1;
-    repeated KeyValue keyvalues = 2;
+    repeated KeyValue fields = 2;
 }
 
 message Reference {
