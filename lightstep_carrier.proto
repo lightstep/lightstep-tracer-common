@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package lightstep;
 
+option go_package = "lightsteppb";
+
 // The standard carrier for binary context propagation into LightStep.
 message BinaryCarrier {
   // "text_ctx" was deprecated following lightstep-tracer-cpp-0.36
