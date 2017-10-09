@@ -98,6 +98,8 @@ message ReportResponse {
     google.protobuf.Timestamp receive_timestamp = 2;
     google.protobuf.Timestamp transmit_timestamp = 3;
     repeated string errors = 4;
+    repeated string warnings = 5;
+    repeated string infos = 6;
 }
 
 service CollectorService {
