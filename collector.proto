@@ -103,10 +103,10 @@ message ReportResponse {
 service CollectorService {
     rpc Report(ReportRequest) returns (ReportResponse) {
        option (google.api.http) = {
-          post: "/v1/report"
+          post: "/api/v2/report"
           body: "*"
           additional_bindings {
-             get: "/v1/report"
+             get: "/api/v2/report"
           }
        };
     }
