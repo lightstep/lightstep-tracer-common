@@ -57,7 +57,7 @@ message Span {
     string operation_name = 2;
     repeated Reference references = 3 [(gogoproto.nullable) = false];
     google.protobuf.Timestamp start_timestamp = 4  [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    uint64 duration_micros = 5;
+    uint64 duration_micros = 5 [(gogoproto.stdduration) = true];
     repeated KeyValue tags = 6 [(gogoproto.nullable) = false];
     repeated Log logs = 7 [(gogoproto.nullable) = false];
 }
@@ -77,7 +77,7 @@ message MetricsSample {
 
 message InternalMetrics {
     google.protobuf.Timestamp start_timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    uint64 duration_micros = 2;
+    uint64 duration_micros = 2 [(gogoproto.stdduration) = true];
     repeated Log logs = 3 [(gogoproto.nullable) = false];
     repeated MetricsSample counts = 4 [(gogoproto.nullable) = false];
     repeated MetricsSample gauges = 5 [(gogoproto.nullable) = false];
@@ -91,7 +91,7 @@ message ReportRequest {
     Reporter reporter = 1 [(gogoproto.nullable) = false];
     Auth auth = 2 [(gogoproto.nullable) = false];
     repeated Span spans = 3 [(gogoproto.nullable) = false];
-    int32 timestamp_offset_micros = 5;
+    int32 timestamp_offset_micros = 5 [(gogoproto.stdduration) = true];
     InternalMetrics internal_metrics = 6 [(gogoproto.nullable) = false];
 }
 
