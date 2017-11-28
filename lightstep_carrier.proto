@@ -4,6 +4,13 @@ package lightstep;
 
 option go_package = "lightsteppb";
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.protosizer_all) = true;
+option (gogoproto.sizer_all) = false;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+
 // The standard carrier for binary context propagation into LightStep.
 message BinaryCarrier {
   // "text_ctx" was deprecated following lightstep-tracer-cpp-0.36
