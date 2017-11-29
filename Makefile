@@ -9,11 +9,8 @@ build: test
 
 PWD = $(shell pwd)
 
-# @@@ HERE Work on this up in its proper GOPATH, not the submodule
-# Use protoc support for canonical import paths, then?
-# Generate Go stuff in lightstep-tracer-go
-# Generate the files below into a vendor sub-directory
 TEST_OUTPUT_PREFIX = test/vendor/github.com/lightstep/lightstep-tracer-common/test
+TEST_CLEAN_PREFIX = test/vendor
 TEST_PROTO_GEN = \
 	$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go \
 	$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go
@@ -32,3 +29,4 @@ $(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.pro
 
 test: $(TEST_PROTO_GEN) test/proto_test.go
 	go test -v ./test
+	rm -rf $(TEST_CLEAN_PREFIX)
