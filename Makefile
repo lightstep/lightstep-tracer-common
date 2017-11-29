@@ -13,17 +13,20 @@ PWD = $(shell pwd)
 # Use protoc support for canonical import paths, then?
 # Generate Go stuff in lightstep-tracer-go
 # Generate the files below into a vendor sub-directory
-TEST_PROTO_GEN = test/lightsteppb/lightstep_carrier.pb.go test/collectorpb/collector.pb.go
+TEST_OUTPUT_PREFIX = test/vendor/github.com/lightstep/lightstep-tracer-common/test
+TEST_PROTO_GEN = \
+	$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go \
+	$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go
 
-test/collectorpb/collector.pb.go: collector.proto
-	mkdir -p test/collectorpb && cd test && \
-	docker run --rm -v $(PWD):/input:ro -v $(PWD)/test/collectorpb:/output \
+$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go: collector.proto
+	mkdir -p $(TEST_OUTPUT_PREFIX)/collectorpb && cd test && \
+	docker run --rm -v $(PWD):/input:ro -v $(PWD)/$(TEST_OUTPUT_PREFIX)/collectorpb:/output \
 	  lightstep/gogoprotoc:latest \
 		protoc -I/input/third_party/googleapis --gogofaster_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:/output --proto_path=/input:. /input/collector.proto
 
-test/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
-	mkdir -p test/lightsteppb && cd test && \
-	docker run --rm -v $(PWD):/input:ro -v $(PWD)/test/lightsteppb:/output \
+$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
+	mkdir -p $(TEST_OUTPUT_PREFIX)/lightsteppb && cd test && \
+	docker run --rm -v $(PWD):/input:ro -v $(PWD)/$(TEST_OUTPUT_PREFIX)/lightsteppb:/output \
 	  lightstep/gogoprotoc:latest \
 	  	protoc --gogofaster_out=plugins=grpc:/output --proto_path=/input:. /input/lightstep_carrier.proto
 

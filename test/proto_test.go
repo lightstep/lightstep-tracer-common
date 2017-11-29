@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"./collectorpb"
-	"./lightsteppb"
+	"github.com/lightstep/lightstep-tracer-common/test/collectorpb"
+	"github.com/lightstep/lightstep-tracer-common/test/lightsteppb"
 )
 
 func TestProtoIsGogo(t *testing.T) {
