@@ -9,8 +9,7 @@ build: test
 
 PWD = $(shell pwd)
 
-TEST_OUTPUT_PREFIX = test/vendor/github.com/lightstep/lightstep-tracer-common/test
-TEST_CLEAN_PREFIX = test/vendor
+TEST_OUTPUT_PREFIX = test
 TEST_PROTO_GEN = \
 	$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go \
 	$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go
@@ -29,4 +28,3 @@ $(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.pro
 
 test: $(TEST_PROTO_GEN) test/proto_test.go
 	go test -v ./test
-	rm -rf $(TEST_CLEAN_PREFIX)
