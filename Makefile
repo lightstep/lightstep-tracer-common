@@ -1,29 +1,31 @@
+# Note the protoc-generated code in this directory is a sanity check
+# of the protos here, not generated code for import.
+#
 .PHONY: default build test
 
 default: build
 
-build: proto
+build: test
 
-test: build
+PWD = $(shell pwd)
 
-PROTO_GEN = lightsteppb/lightstep_carrier.pb.go collectorpb/collector.pb.go
+# @@@ HERE Work on this up in its proper GOPATH, not the submodule
+# Use protoc support for canonical import paths, then?
+# Generate Go stuff in lightstep-tracer-go
+# Generate the files below into a vendor sub-directory
+TEST_PROTO_GEN = test/lightsteppb/lightstep_carrier.pb.go test/collectorpb/collector.pb.go
 
-.PHONY: proto clean-proto
-
-clean-proto:
-	@rm -f $(PROTO_GEN)
-
-proto: $(PROTO_GEN)
-
-collectorpb/collector.pb.go: collector.proto
-	docker run --rm -v $(shell pwd):/input:ro -v $(shell pwd)/collectorpb:/output \
+test/collectorpb/collector.pb.go: collector.proto
+	mkdir -p test/collectorpb && cd test && \
+	docker run --rm -v $(PWD):/input:ro -v $(PWD)/test/collectorpb:/output \
 	  lightstep/gogoprotoc:latest \
 		protoc -I/input/third_party/googleapis --gogofaster_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:/output --proto_path=/input:. /input/collector.proto
 
-lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
-	docker run --rm -v $(shell pwd):/input:ro -v $(shell pwd)/lightsteppb:/output \
+test/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
+	mkdir -p test/lightsteppb && cd test && \
+	docker run --rm -v $(PWD):/input:ro -v $(PWD)/test/lightsteppb:/output \
 	  lightstep/gogoprotoc:latest \
 	  	protoc --gogofaster_out=plugins=grpc:/output --proto_path=/input:. /input/lightstep_carrier.proto
 
-test: $(PROTO_GEN) proto_test.go
-	go test -v .
+test: $(TEST_PROTO_GEN) test/proto_test.go
+	go test -v ./test
