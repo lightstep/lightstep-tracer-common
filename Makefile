@@ -31,4 +31,4 @@ $(GOGO_GENRULES): $(GOLANG)-$(GOGO)-%: %.proto
 	@mv $(TMPDIR)/$(basename $^).pb.go $(GOLANG)/$(GOGO)/$(basename $^)pb
 
 test: $(GOGO_GENRULES) golang/proto_test.go
-	go test -v ./test
+	go test -v ./golang
