@@ -8,23 +8,27 @@ default: build
 build: test
 
 PWD = $(shell pwd)
+TMPDIR = $(PWD)/tmpgen
 
-TEST_OUTPUT_PREFIX = test
-TEST_PROTO_GEN = \
-	$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go \
-	$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go
+GOLANG = golang
+PBUF = protobuf
+GOGO = gogo
 
-$(TEST_OUTPUT_PREFIX)/collectorpb/collector.pb.go: collector.proto
-	mkdir -p $(TEST_OUTPUT_PREFIX)/collectorpb && cd test && \
-	docker run --rm -v $(PWD):/input:ro -v $(PWD)/$(TEST_OUTPUT_PREFIX)/collectorpb:/output \
-	  lightstep/gogoprotoc:latest \
-		protoc -I/input/third_party/googleapis --gogofaster_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:/output --proto_path=/input:. /input/collector.proto
+PROTO_SOURCES = collector.proto carrier.proto
 
-$(TEST_OUTPUT_PREFIX)/lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
-	mkdir -p $(TEST_OUTPUT_PREFIX)/lightsteppb && cd test && \
-	docker run --rm -v $(PWD):/input:ro -v $(PWD)/$(TEST_OUTPUT_PREFIX)/lightsteppb:/output \
-	  lightstep/gogoprotoc:latest \
-	  	protoc --gogofaster_out=plugins=grpc:/output --proto_path=/input:. /input/lightstep_carrier.proto
+GOGO_GENRULES = $(foreach proto,$(PROTO_SOURCES),$(GOLANG)-$(GOGO)-$(basename $(proto)))
+.PHONY: $(GOGO_GENRULES)
 
-test: $(TEST_PROTO_GEN) test/proto_test.go
+$(GOGO_GENRULES): $(GOLANG)-$(GOGO)-%: %.proto
+	@echo compiling $^ [gogo] ...
+	@docker run --rm -v $(PWD):/input:ro -v $(TMPDIR):/output \
+		lightstep/gogoprotoc:latest \
+			protoc -I/input/third_party/googleapis \
+				--gogofaster_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:/output \
+				--proto_path=/input:. \
+				/input/$^
+	@mkdir -p $(GOLANG)/$(GOGO)/$(basename $^)pb
+	@mv $(TMPDIR)/$(basename $^).pb.go $(GOLANG)/$(GOGO)/$(basename $^)pb
+
+test: $(GOGO_GENRULES) golang/proto_test.go
 	go test -v ./test

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package lightstep;
 
-option go_package = "lightsteppb";
+option go_package = "carrierpb";
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
@@ -17,7 +17,7 @@ message BinaryCarrier {
   repeated bytes deprecated_text_ctx = 1;
 
   // The Opentracing "basictracer" proto.
-  BasicTracerCarrier basic_ctx = 2;
+  BasicTracerCarrier basic_ctx = 2;  // @@@ nullable
 }
 
 // Copy of https://github.com/opentracing/basictracer-go/blob/master/wire/wire.proto
