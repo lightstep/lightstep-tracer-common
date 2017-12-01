@@ -4,7 +4,7 @@ PKG_PREFIX = github.com/lightstep/lightstep-tracer-common
 
 PROTO_SOURCES = \
 	collector.proto \
-	carrier.proto
+	lightstep.proto
 
 TEST_SOURCES = \
 	$(GOLANG)/gogo_test.go \

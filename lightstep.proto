@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package lightstep;
 
-option go_package = "carrierpb";
+option go_package = "lightsteppb";
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 

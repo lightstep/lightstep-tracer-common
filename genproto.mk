@@ -43,7 +43,7 @@ define gen_protoc_target
     -v $(TMPDIR):/output \
     lightstep/gogoprotoc:latest \
     protoc \
-    -I/input/third_party/googleapis \
+    -I./github.com/google/googleapis \
     $(4):/output \
     --proto_path=/input:. \
     /input/$(1)
