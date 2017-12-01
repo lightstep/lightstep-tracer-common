@@ -34,22 +34,23 @@ endef
 # $(4) = protoc-output spec
 #
 # Note: the --proto_path include "." below references the
-# docker image's $(GOPATH)/src.
+# docker image's $(GOPATH)/src.  /input is mapped to the
+# host's $(GOPATH)/src.
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
   @mkdir -p $(TMPDIR) 
   @docker run --rm \
-    -v $(PWD):/input:ro \
+    -v $(GOPATH)/src:/input:ro \
     -v $(TMPDIR):/output \
     lightstep/gogoprotoc:latest \
     protoc \
     -I./github.com/google/googleapis \
     $(4):/output \
     --proto_path=/input:. \
-    /input/$(1)
+    /input/$(PKG_PREFIX)/$(1)
   @mkdir -p $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1))pbfakes
-  @sed 's@package $(basename $(1))pb@package $(basename $(1))pb // import "$(PKG_PREFIX)/golang/$(3)/$(basename $(1))pb"@' < $(TMPDIR)/$(basename $(1)).pb.go > $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1)).pb.go
-  @rm $(TMPDIR)/$(basename $(1)).pb.go
+  @sed 's@package $(basename $(1))pb@package $(basename $(1))pb // import "$(PKG_PREFIX)/golang/$(3)/$(basename $(1))pb"@' < $(TMPDIR)/$(PKG_PREFIX)/$(basename $(1)).pb.go > $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1)).pb.go
+  @rm $(TMPDIR)/$(PKG_PREFIX)/$(basename $(1)).pb.go
 endef
 
 define clean_protoc_targets
