@@ -29,6 +29,16 @@ define gen_protobuf_target
 $(call gen_protoc_target,$(1),$(GOLANG)/$(PBUF)/$(basename $(1))pb/$(basename $(1)).pb.go,$(PBUF),--go_out=$(PROTOC_OPTS))
 endef
 
+define protoc_targets_to_link_targets
+$(foreach target,$(1),$(target)-link)
+endef
+
+define gen_protoc_link
+@mkdir -p "$(subst -,/,$(subst -link,,$(2)))pb"
+@rm $(subst -,/,$(subst -link,,$(2)))pb/$(1)
+@ln -s ../../../$(1) $(subst -,/,$(subst -link,,$(2)))pb/$(1)
+endef
+
 # $(1) = .proto input
 # $(2) = .pb.go output
 # $(3) = gogo or protobuf
@@ -40,7 +50,7 @@ endef
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
   @mkdir -p $(TMPDIR)
-  sed -E 's@import "github.com/lightstep/([^/]+)/(.*)"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2"@g' < $(1) > $(TMPDIR)/$(1)
+  @sed -E 's@import "github.com/lightstep/([^/]+)/(.*)"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2"@g' < $(1) > $(TMPDIR)/$(1)
   @docker run --rm \
     -v $(GOPATH)/src:/input:ro \
     -v $(TMPDIR):/output \
