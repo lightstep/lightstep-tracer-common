@@ -21,7 +21,7 @@ FAKES = \
 	golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go
 
 .PHONY: default build test clean proto-links
-.PHONY: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(GOOG_LINKS) $(PBUF_LINKS)
+.PHONY: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(GOGO_LINKS) $(PBUF_LINKS)
 
 default: build
 
@@ -36,10 +36,10 @@ clean:
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
 
 $(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto
-	$(call gen_protoc_link,$<,$@)
+	$(call gen_protoc_link,$<,$@,$(GOGO))
 
 $(PBUF_LINKS): $(GOLANG)-$(PBUF)-%-link: %.proto
-	$(call gen_protoc_link,$<,$@)
+	$(call gen_protoc_link,$<,$@,$(PBUF))
 
 $(GOGO_GENTGTS): $(GOLANG)-$(GOGO)-%: %.proto proto-links
 	$(call gen_gogo_target,$<)
