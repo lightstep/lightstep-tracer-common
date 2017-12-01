@@ -11,7 +11,7 @@
 		BinaryCarrier
 		BasicTracerCarrier
 */
-package carrierpb
+package carrierpb // import "github.com/lightstep/lightstep-tracer-common/golang/gogo/carrierpb"
 
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"

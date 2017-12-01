@@ -21,7 +21,7 @@
 		Command
 		ReportResponse
 */
-package collectorpb
+package collectorpb // import "github.com/lightstep/lightstep-tracer-common/golang/gogo/collectorpb"
 
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
