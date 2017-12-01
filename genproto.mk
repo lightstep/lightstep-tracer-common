@@ -2,8 +2,9 @@ GOLANG = golang
 PBUF   = protobuf
 GOGO   = gogo
 
-PWD    = $(shell pwd)
-TMPDIR = $(PWD)/tmpgen
+PWD     = $(shell pwd)
+TMPNAME = tmpgen
+TMPDIR  = $(PWD)/$(TMPNAME)
 
 # List of standard protoc options
 PROTOC_OPTS = plugins=grpc
@@ -38,7 +39,8 @@ endef
 # host's $(GOPATH)/src.
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
-  @mkdir -p $(TMPDIR) 
+  @mkdir -p $(TMPDIR)
+  sed -E 's@import "github.com/lightstep/([^/]+)/(.*)"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2"@g' < $(1) > $(TMPDIR)/$(1)
   @docker run --rm \
     -v $(GOPATH)/src:/input:ro \
     -v $(TMPDIR):/output \
@@ -47,10 +49,11 @@ define gen_protoc_target
     -I./github.com/google/googleapis \
     $(4):/output \
     --proto_path=/input:. \
-    /input/$(PKG_PREFIX)/$(1)
+    /input/$(PKG_PREFIX)/$(TMPNAME)/$(1)
   @mkdir -p $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1))pbfakes
-  @sed 's@package $(basename $(1))pb@package $(basename $(1))pb // import "$(PKG_PREFIX)/golang/$(3)/$(basename $(1))pb"@' < $(TMPDIR)/$(PKG_PREFIX)/$(basename $(1)).pb.go > $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1)).pb.go
-  @rm $(TMPDIR)/$(PKG_PREFIX)/$(basename $(1)).pb.go
+  @sed 's@package $(basename $(1))pb@package $(basename $(1))pb // import "$(PKG_PREFIX)/golang/$(3)/$(basename $(1))pb"@' < $(TMPDIR)/$(PKG_PREFIX)/$(TMPNAME)/$(basename $(1)).pb.go > $(GOLANG)/$(3)/$(basename $(1))pb/$(basename $(1)).pb.go
+  @rm $(TMPDIR)/$(PKG_PREFIX)/$(TMPNAME)/$(basename $(1)).pb.go
+  @rm $(TMPDIR)/$(1)
 endef
 
 define clean_protoc_targets
