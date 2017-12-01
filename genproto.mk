@@ -35,7 +35,7 @@ endef
 
 define gen_protoc_link
 @mkdir -p "$(subst -,/,$(subst -link,,$(2)))pb"
-@rm $(subst -,/,$(subst -link,,$(2)))pb/$(1)
+@rm -f $(subst -,/,$(subst -link,,$(2)))pb/$(1)
 @ln -s ../../../$(1) $(subst -,/,$(subst -link,,$(2)))pb/$(1)
 endef
 
