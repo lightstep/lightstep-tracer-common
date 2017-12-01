@@ -6,6 +6,7 @@ import (
 
 	"github.com/lightstep/lightstep-tracer-common/golang/protobuf/carrierpb"
 	"github.com/lightstep/lightstep-tracer-common/golang/protobuf/collectorpb"
+	"github.com/lightstep/lightstep-tracer-common/golang/protobuf/collectorpb/collectorpbfakes"
 )
 
 func TestProtoIsProtobuf(t *testing.T) {
@@ -18,4 +19,6 @@ func TestProtoIsProtobuf(t *testing.T) {
 	if ptag := reflect.ValueOf(c).Type().Field(0).Tag.Get("protobuf"); ptag == "" {
 		panic("Not a protobuf!")
 	}
+
+	_ = collectorpbfakes.FakeCollectorServiceClient{}
 }
