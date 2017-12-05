@@ -15,7 +15,8 @@ GOLANG = golang
 PBUF   = protobuf
 GOGO   = gogo
 
-ROOT = $(shell echo ${GOPATH} | cut -d: -f1)
+# Use the final GOPATH element, since that's where circleci puts the code (lame!)
+ROOT = $(shell echo ${GOPATH} | tr : \\n | tail -1)
 
 PWD     = $(shell pwd)
 TMPNAME = tmpgen
