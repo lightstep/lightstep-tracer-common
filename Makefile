@@ -2,7 +2,8 @@ default: build
 
 genproto.mk:
 	@docker pull lightstep/gogoprotoc:latest
-	@docker create --rm --name lightstep-get-genproto-mk lightstep/gogoprotoc:latest
+	@-docker rm -v lightstep-get-genproto-mk
+	@docker create --name lightstep-get-genproto-mk lightstep/gogoprotoc:latest
 	@docker cp lightstep-get-genproto-mk:/root/genproto.mk genproto.mk
 	@docker rm -v lightstep-get-genproto-mk
 
