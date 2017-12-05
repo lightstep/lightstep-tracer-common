@@ -29,12 +29,14 @@ FAKES = \
 	golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go \
 	golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go
 
-.PHONY: default build test clean proto-links
+.PHONY: default build test clean proto-links proto
 .PHONY: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(GOGO_LINKS) $(PBUF_LINKS)
 
 build: test
 
-test: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES) $(TEST_SOURCES)
+proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES) 
+
+test: $(TEST_SOURCES)
 	go test -v ./golang
 
 clean: 
