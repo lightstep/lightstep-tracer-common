@@ -1,3 +1,11 @@
+default: build
+
+genproto.mk:
+	@docker pull lightstep/gogoprotoc:latest
+	@docker create --rm --name lightstep-get-genproto-mk lightstep/gogoprotoc:latest
+	@docker cp lightstep-get-genproto-mk:/root/genproto.mk genproto.mk
+	@docker rm -v lightstep-get-genproto-mk
+
 include genproto.mk
 
 PKG_PREFIX = github.com/lightstep/lightstep-tracer-common
@@ -22,8 +30,6 @@ FAKES = \
 
 .PHONY: default build test clean proto-links
 .PHONY: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(GOGO_LINKS) $(PBUF_LINKS)
-
-default: build
 
 build: test
 
