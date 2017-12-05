@@ -1,6 +1,16 @@
 machine:
   services:
     - docker
+  environment:
+    GOPATH: ${HOME}/go
+    BUILD_DIR: ${GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    GOOGLE_APPLICATION_CREDENTIALS: ${HOME}/gcloud-service-key.json
+    HELM_INSTALL_DIR: ${HOME}/bin
+
+dependencies:
+  pre:
+    - go get github.com/golang/dep/...
+    - go install github.com/golang/dep/...
 
 test:
   override:
