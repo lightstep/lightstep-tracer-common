@@ -15,6 +15,8 @@ GOLANG = golang
 PBUF   = protobuf
 GOGO   = gogo
 
+ROOT = $(shell echo ${GOPATH} | cut -d: -f1)
+
 PWD     = $(shell pwd)
 TMPNAME = tmpgen
 TMPDIR  = $(PWD)/$(TMPNAME)
@@ -58,14 +60,14 @@ endef
 # $(4) = protoc-output spec
 #
 # Note: the --proto_path include "." below references the
-# docker image's $(GOPATH)/src.  /input is mapped to the
-# host's $(GOPATH)/src.
+# docker image's $(ROOT)/src.  /input is mapped to the
+# host's $(ROOT)/src.
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
   @mkdir -p $(TMPDIR)
   @sed -E 's@import "github.com/lightstep/([^/]+)/(.*).proto"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2pb/\2.proto"@g' < $(1) > $(TMPDIR)/$(1)
   @docker run --rm \
-    -v $(GOPATH)/src:/input:ro \
+    -v $(ROOT)/src:/input:ro \
     -v $(TMPDIR):/output \
     lightstep/gogoprotoc:latest \
     protoc \
@@ -89,7 +91,7 @@ endef
 # $(3) class name
 define generate_fake
   @docker run --rm \
-	-v $(GOPATH):/usergo \
+	-v $(ROOT):/usergo \
 	lightstep/gobuild:latest \
 	/bin/bash -c "cd /usergo/src/$(PKG_PREFIX) && counterfeiter -o $(1) $(2) $(3)"
 endef
