@@ -65,6 +65,8 @@ endef
 # host's $(ROOT)/src.
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
+  pwd
+  ls -l
   @mkdir -p $(TMPDIR)
   @sed -E 's@import "github.com/lightstep/([^/]+)/(.*).proto"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2pb/\2.proto"@g' < $(1) > $(TMPDIR)/$(1)
   @docker run --rm \
