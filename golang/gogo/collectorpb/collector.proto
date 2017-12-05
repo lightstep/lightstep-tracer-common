@@ -8,14 +8,8 @@ option objc_class_prefix = "LSPB";
 option java_multiple_files = true;
 option java_package = "com.lightstep.tracer.grpc";
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
-
-option (gogoproto.protosizer_all) = true;
-option (gogoproto.sizer_all) = false;
-option (gogoproto.marshaler_all) = true;
-option (gogoproto.unmarshaler_all) = true;
 
 message SpanContext {
     uint64 trace_id = 1;
@@ -40,8 +34,8 @@ message KeyValue {
 }
 
 message Log {
-    google.protobuf.Timestamp timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    repeated KeyValue fields = 2 [(gogoproto.nullable) = false];
+    google.protobuf.Timestamp timestamp = 1;
+    repeated KeyValue fields = 2;
 }
 
 message Reference {
@@ -50,22 +44,22 @@ message Reference {
         FOLLOWS_FROM = 1;
     }
     Relationship relationship = 1;
-    SpanContext span_context = 2 [(gogoproto.nullable) = false];
+    SpanContext span_context = 2;
 }
 
 message Span {
-    SpanContext span_context = 1 [(gogoproto.nullable) = false];
+    SpanContext span_context = 1;
     string operation_name = 2;
-    repeated Reference references = 3 [(gogoproto.nullable) = false];
-    google.protobuf.Timestamp start_timestamp = 4  [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    int64 duration_micros = 5;
-    repeated KeyValue tags = 6 [(gogoproto.nullable) = false];
-    repeated Log logs = 7 [(gogoproto.nullable) = false];
+    repeated Reference references = 3;
+    google.protobuf.Timestamp start_timestamp = 4;
+    uint64 duration_micros = 5;
+    repeated KeyValue tags = 6;
+    repeated Log logs = 7;
 }
 
 message Reporter {
     uint64 reporter_id = 1;
-    repeated KeyValue tags = 4 [(gogoproto.nullable) = false];
+    repeated KeyValue tags = 4;
 }
 
 message MetricsSample {
@@ -77,11 +71,11 @@ message MetricsSample {
 }
 
 message InternalMetrics {
-    google.protobuf.Timestamp start_timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    int64 duration_micros = 2;
-    repeated Log logs = 3 [(gogoproto.nullable) = false];
-    repeated MetricsSample counts = 4 [(gogoproto.nullable) = false];
-    repeated MetricsSample gauges = 5 [(gogoproto.nullable) = false];
+    google.protobuf.Timestamp start_timestamp = 1;
+    uint64 duration_micros = 2;
+    repeated Log logs = 3;
+    repeated MetricsSample counts = 4;
+    repeated MetricsSample gauges = 5;
 }
 
 message Auth {
@@ -89,11 +83,11 @@ message Auth {
 }
 
 message ReportRequest {
-    Reporter reporter = 1 [(gogoproto.nullable) = false];
-    Auth auth = 2 [(gogoproto.nullable) = false];
-    repeated Span spans = 3 [(gogoproto.nullable) = false];
-    int64 timestamp_offset_micros = 5;
-    InternalMetrics internal_metrics = 6 [(gogoproto.nullable) = false];
+    Reporter reporter = 1;
+    Auth auth = 2;
+    repeated Span spans = 3;
+    int32 timestamp_offset_micros = 5;
+    InternalMetrics internal_metrics = 6;
 }
 
 message Command {
@@ -101,9 +95,9 @@ message Command {
 }
 
 message ReportResponse {
-    repeated Command commands = 1 [(gogoproto.nullable) = false];
-    google.protobuf.Timestamp receive_timestamp = 2 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    google.protobuf.Timestamp transmit_timestamp = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    repeated Command commands = 1;
+    google.protobuf.Timestamp receive_timestamp = 2;
+    google.protobuf.Timestamp transmit_timestamp = 3;
     repeated string errors = 4;
     repeated string warnings = 5;
     repeated string infos = 6;

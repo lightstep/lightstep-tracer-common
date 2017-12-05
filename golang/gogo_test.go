@@ -10,10 +10,10 @@ import (
 
 func TestProtoIsGogo(t *testing.T) {
 	var r collectorpb.ReportRequest
-	_ = r.ProtoSize()
+	_, _ = r.Marshal()
 
 	var c lightsteppb.BinaryCarrier
-	_ = c.ProtoSize()
+	_, _ = c.Marshal()
 
 	_ = collectorpbfakes.FakeCollectorServiceClient{}
 }

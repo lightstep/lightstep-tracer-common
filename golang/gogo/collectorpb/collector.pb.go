@@ -26,11 +26,8 @@ package collectorpb // import "github.com/lightstep/lightstep-tracer-common/gola
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "github.com/gogo/protobuf/gogoproto"
-import _ "github.com/gogo/protobuf/types"
+import google_protobuf "github.com/gogo/protobuf/types"
 import _ "google.golang.org/genproto/googleapis/api/annotations"
-
-import time "time"
 
 import (
 	context "golang.org/x/net/context"
@@ -38,7 +35,6 @@ import (
 )
 
 import encoding_binary "encoding/binary"
-import github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 
 import io "io"
 
@@ -46,7 +42,6 @@ import io "io"
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -129,7 +124,7 @@ func (*KeyValue) Descriptor() ([]byte, []int) { return fileDescriptorCollector, 
 type isKeyValue_Value interface {
 	isKeyValue_Value()
 	MarshalTo([]byte) (int, error)
-	ProtoSize() int
+	Size() int
 }
 
 type KeyValue_StringValue struct {
@@ -316,8 +311,8 @@ func _KeyValue_OneofSizer(msg proto.Message) (n int) {
 }
 
 type Log struct {
-	Timestamp time.Time  `protobuf:"bytes,1,opt,name=timestamp,stdtime" json:"timestamp"`
-	Fields    []KeyValue `protobuf:"bytes,2,rep,name=fields" json:"fields"`
+	Timestamp *google_protobuf.Timestamp `protobuf:"bytes,1,opt,name=timestamp" json:"timestamp,omitempty"`
+	Fields    []*KeyValue                `protobuf:"bytes,2,rep,name=fields" json:"fields,omitempty"`
 }
 
 func (m *Log) Reset()                    { *m = Log{} }
@@ -325,14 +320,14 @@ func (m *Log) String() string            { return proto.CompactTextString(m) }
 func (*Log) ProtoMessage()               {}
 func (*Log) Descriptor() ([]byte, []int) { return fileDescriptorCollector, []int{2} }
 
-func (m *Log) GetTimestamp() time.Time {
+func (m *Log) GetTimestamp() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
-	return time.Time{}
+	return nil
 }
 
-func (m *Log) GetFields() []KeyValue {
+func (m *Log) GetFields() []*KeyValue {
 	if m != nil {
 		return m.Fields
 	}
@@ -341,7 +336,7 @@ func (m *Log) GetFields() []KeyValue {
 
 type Reference struct {
 	Relationship Reference_Relationship `protobuf:"varint,1,opt,name=relationship,proto3,enum=lightstep.collector.Reference_Relationship" json:"relationship,omitempty"`
-	SpanContext  SpanContext            `protobuf:"bytes,2,opt,name=span_context,json=spanContext" json:"span_context"`
+	SpanContext  *SpanContext           `protobuf:"bytes,2,opt,name=span_context,json=spanContext" json:"span_context,omitempty"`
 }
 
 func (m *Reference) Reset()                    { *m = Reference{} }
@@ -356,21 +351,21 @@ func (m *Reference) GetRelationship() Reference_Relationship {
 	return Reference_CHILD_OF
 }
 
-func (m *Reference) GetSpanContext() SpanContext {
+func (m *Reference) GetSpanContext() *SpanContext {
 	if m != nil {
 		return m.SpanContext
 	}
-	return SpanContext{}
+	return nil
 }
 
 type Span struct {
-	SpanContext    SpanContext `protobuf:"bytes,1,opt,name=span_context,json=spanContext" json:"span_context"`
-	OperationName  string      `protobuf:"bytes,2,opt,name=operation_name,json=operationName,proto3" json:"operation_name,omitempty"`
-	References     []Reference `protobuf:"bytes,3,rep,name=references" json:"references"`
-	StartTimestamp time.Time   `protobuf:"bytes,4,opt,name=start_timestamp,json=startTimestamp,stdtime" json:"start_timestamp"`
-	DurationMicros int64       `protobuf:"varint,5,opt,name=duration_micros,json=durationMicros,proto3" json:"duration_micros,omitempty"`
-	Tags           []KeyValue  `protobuf:"bytes,6,rep,name=tags" json:"tags"`
-	Logs           []Log       `protobuf:"bytes,7,rep,name=logs" json:"logs"`
+	SpanContext    *SpanContext               `protobuf:"bytes,1,opt,name=span_context,json=spanContext" json:"span_context,omitempty"`
+	OperationName  string                     `protobuf:"bytes,2,opt,name=operation_name,json=operationName,proto3" json:"operation_name,omitempty"`
+	References     []*Reference               `protobuf:"bytes,3,rep,name=references" json:"references,omitempty"`
+	StartTimestamp *google_protobuf.Timestamp `protobuf:"bytes,4,opt,name=start_timestamp,json=startTimestamp" json:"start_timestamp,omitempty"`
+	DurationMicros uint64                     `protobuf:"varint,5,opt,name=duration_micros,json=durationMicros,proto3" json:"duration_micros,omitempty"`
+	Tags           []*KeyValue                `protobuf:"bytes,6,rep,name=tags" json:"tags,omitempty"`
+	Logs           []*Log                     `protobuf:"bytes,7,rep,name=logs" json:"logs,omitempty"`
 }
 
 func (m *Span) Reset()                    { *m = Span{} }
@@ -378,11 +373,11 @@ func (m *Span) String() string            { return proto.CompactTextString(m) }
 func (*Span) ProtoMessage()               {}
 func (*Span) Descriptor() ([]byte, []int) { return fileDescriptorCollector, []int{4} }
 
-func (m *Span) GetSpanContext() SpanContext {
+func (m *Span) GetSpanContext() *SpanContext {
 	if m != nil {
 		return m.SpanContext
 	}
-	return SpanContext{}
+	return nil
 }
 
 func (m *Span) GetOperationName() string {
@@ -392,35 +387,35 @@ func (m *Span) GetOperationName() string {
 	return ""
 }
 
-func (m *Span) GetReferences() []Reference {
+func (m *Span) GetReferences() []*Reference {
 	if m != nil {
 		return m.References
 	}
 	return nil
 }
 
-func (m *Span) GetStartTimestamp() time.Time {
+func (m *Span) GetStartTimestamp() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.StartTimestamp
 	}
-	return time.Time{}
+	return nil
 }
 
-func (m *Span) GetDurationMicros() int64 {
+func (m *Span) GetDurationMicros() uint64 {
 	if m != nil {
 		return m.DurationMicros
 	}
 	return 0
 }
 
-func (m *Span) GetTags() []KeyValue {
+func (m *Span) GetTags() []*KeyValue {
 	if m != nil {
 		return m.Tags
 	}
 	return nil
 }
 
-func (m *Span) GetLogs() []Log {
+func (m *Span) GetLogs() []*Log {
 	if m != nil {
 		return m.Logs
 	}
@@ -428,8 +423,8 @@ func (m *Span) GetLogs() []Log {
 }
 
 type Reporter struct {
-	ReporterId uint64     `protobuf:"varint,1,opt,name=reporter_id,json=reporterId,proto3" json:"reporter_id,omitempty"`
-	Tags       []KeyValue `protobuf:"bytes,4,rep,name=tags" json:"tags"`
+	ReporterId uint64      `protobuf:"varint,1,opt,name=reporter_id,json=reporterId,proto3" json:"reporter_id,omitempty"`
+	Tags       []*KeyValue `protobuf:"bytes,4,rep,name=tags" json:"tags,omitempty"`
 }
 
 func (m *Reporter) Reset()                    { *m = Reporter{} }
@@ -444,7 +439,7 @@ func (m *Reporter) GetReporterId() uint64 {
 	return 0
 }
 
-func (m *Reporter) GetTags() []KeyValue {
+func (m *Reporter) GetTags() []*KeyValue {
 	if m != nil {
 		return m.Tags
 	}
@@ -467,7 +462,7 @@ func (*MetricsSample) Descriptor() ([]byte, []int) { return fileDescriptorCollec
 type isMetricsSample_Value interface {
 	isMetricsSample_Value()
 	MarshalTo([]byte) (int, error)
-	ProtoSize() int
+	Size() int
 }
 
 type MetricsSample_IntValue struct {
@@ -573,11 +568,11 @@ func _MetricsSample_OneofSizer(msg proto.Message) (n int) {
 }
 
 type InternalMetrics struct {
-	StartTimestamp time.Time       `protobuf:"bytes,1,opt,name=start_timestamp,json=startTimestamp,stdtime" json:"start_timestamp"`
-	DurationMicros int64           `protobuf:"varint,2,opt,name=duration_micros,json=durationMicros,proto3" json:"duration_micros,omitempty"`
-	Logs           []Log           `protobuf:"bytes,3,rep,name=logs" json:"logs"`
-	Counts         []MetricsSample `protobuf:"bytes,4,rep,name=counts" json:"counts"`
-	Gauges         []MetricsSample `protobuf:"bytes,5,rep,name=gauges" json:"gauges"`
+	StartTimestamp *google_protobuf.Timestamp `protobuf:"bytes,1,opt,name=start_timestamp,json=startTimestamp" json:"start_timestamp,omitempty"`
+	DurationMicros uint64                     `protobuf:"varint,2,opt,name=duration_micros,json=durationMicros,proto3" json:"duration_micros,omitempty"`
+	Logs           []*Log                     `protobuf:"bytes,3,rep,name=logs" json:"logs,omitempty"`
+	Counts         []*MetricsSample           `protobuf:"bytes,4,rep,name=counts" json:"counts,omitempty"`
+	Gauges         []*MetricsSample           `protobuf:"bytes,5,rep,name=gauges" json:"gauges,omitempty"`
 }
 
 func (m *InternalMetrics) Reset()                    { *m = InternalMetrics{} }
@@ -585,35 +580,35 @@ func (m *InternalMetrics) String() string            { return proto.CompactTextS
 func (*InternalMetrics) ProtoMessage()               {}
 func (*InternalMetrics) Descriptor() ([]byte, []int) { return fileDescriptorCollector, []int{7} }
 
-func (m *InternalMetrics) GetStartTimestamp() time.Time {
+func (m *InternalMetrics) GetStartTimestamp() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.StartTimestamp
 	}
-	return time.Time{}
+	return nil
 }
 
-func (m *InternalMetrics) GetDurationMicros() int64 {
+func (m *InternalMetrics) GetDurationMicros() uint64 {
 	if m != nil {
 		return m.DurationMicros
 	}
 	return 0
 }
 
-func (m *InternalMetrics) GetLogs() []Log {
+func (m *InternalMetrics) GetLogs() []*Log {
 	if m != nil {
 		return m.Logs
 	}
 	return nil
 }
 
-func (m *InternalMetrics) GetCounts() []MetricsSample {
+func (m *InternalMetrics) GetCounts() []*MetricsSample {
 	if m != nil {
 		return m.Counts
 	}
 	return nil
 }
 
-func (m *InternalMetrics) GetGauges() []MetricsSample {
+func (m *InternalMetrics) GetGauges() []*MetricsSample {
 	if m != nil {
 		return m.Gauges
 	}
@@ -637,11 +632,11 @@ func (m *Auth) GetAccessToken() string {
 }
 
 type ReportRequest struct {
-	Reporter              Reporter        `protobuf:"bytes,1,opt,name=reporter" json:"reporter"`
-	Auth                  Auth            `protobuf:"bytes,2,opt,name=auth" json:"auth"`
-	Spans                 []Span          `protobuf:"bytes,3,rep,name=spans" json:"spans"`
-	TimestampOffsetMicros int64           `protobuf:"varint,5,opt,name=timestamp_offset_micros,json=timestampOffsetMicros,proto3" json:"timestamp_offset_micros,omitempty"`
-	InternalMetrics       InternalMetrics `protobuf:"bytes,6,opt,name=internal_metrics,json=internalMetrics" json:"internal_metrics"`
+	Reporter              *Reporter        `protobuf:"bytes,1,opt,name=reporter" json:"reporter,omitempty"`
+	Auth                  *Auth            `protobuf:"bytes,2,opt,name=auth" json:"auth,omitempty"`
+	Spans                 []*Span          `protobuf:"bytes,3,rep,name=spans" json:"spans,omitempty"`
+	TimestampOffsetMicros int32            `protobuf:"varint,5,opt,name=timestamp_offset_micros,json=timestampOffsetMicros,proto3" json:"timestamp_offset_micros,omitempty"`
+	InternalMetrics       *InternalMetrics `protobuf:"bytes,6,opt,name=internal_metrics,json=internalMetrics" json:"internal_metrics,omitempty"`
 }
 
 func (m *ReportRequest) Reset()                    { *m = ReportRequest{} }
@@ -649,39 +644,39 @@ func (m *ReportRequest) String() string            { return proto.CompactTextStr
 func (*ReportRequest) ProtoMessage()               {}
 func (*ReportRequest) Descriptor() ([]byte, []int) { return fileDescriptorCollector, []int{9} }
 
-func (m *ReportRequest) GetReporter() Reporter {
+func (m *ReportRequest) GetReporter() *Reporter {
 	if m != nil {
 		return m.Reporter
 	}
-	return Reporter{}
+	return nil
 }
 
-func (m *ReportRequest) GetAuth() Auth {
+func (m *ReportRequest) GetAuth() *Auth {
 	if m != nil {
 		return m.Auth
 	}
-	return Auth{}
+	return nil
 }
 
-func (m *ReportRequest) GetSpans() []Span {
+func (m *ReportRequest) GetSpans() []*Span {
 	if m != nil {
 		return m.Spans
 	}
 	return nil
 }
 
-func (m *ReportRequest) GetTimestampOffsetMicros() int64 {
+func (m *ReportRequest) GetTimestampOffsetMicros() int32 {
 	if m != nil {
 		return m.TimestampOffsetMicros
 	}
 	return 0
 }
 
-func (m *ReportRequest) GetInternalMetrics() InternalMetrics {
+func (m *ReportRequest) GetInternalMetrics() *InternalMetrics {
 	if m != nil {
 		return m.InternalMetrics
 	}
-	return InternalMetrics{}
+	return nil
 }
 
 type Command struct {
@@ -701,12 +696,12 @@ func (m *Command) GetDisable() bool {
 }
 
 type ReportResponse struct {
-	Commands          []Command `protobuf:"bytes,1,rep,name=commands" json:"commands"`
-	ReceiveTimestamp  time.Time `protobuf:"bytes,2,opt,name=receive_timestamp,json=receiveTimestamp,stdtime" json:"receive_timestamp"`
-	TransmitTimestamp time.Time `protobuf:"bytes,3,opt,name=transmit_timestamp,json=transmitTimestamp,stdtime" json:"transmit_timestamp"`
-	Errors            []string  `protobuf:"bytes,4,rep,name=errors" json:"errors,omitempty"`
-	Warnings          []string  `protobuf:"bytes,5,rep,name=warnings" json:"warnings,omitempty"`
-	Infos             []string  `protobuf:"bytes,6,rep,name=infos" json:"infos,omitempty"`
+	Commands          []*Command                 `protobuf:"bytes,1,rep,name=commands" json:"commands,omitempty"`
+	ReceiveTimestamp  *google_protobuf.Timestamp `protobuf:"bytes,2,opt,name=receive_timestamp,json=receiveTimestamp" json:"receive_timestamp,omitempty"`
+	TransmitTimestamp *google_protobuf.Timestamp `protobuf:"bytes,3,opt,name=transmit_timestamp,json=transmitTimestamp" json:"transmit_timestamp,omitempty"`
+	Errors            []string                   `protobuf:"bytes,4,rep,name=errors" json:"errors,omitempty"`
+	Warnings          []string                   `protobuf:"bytes,5,rep,name=warnings" json:"warnings,omitempty"`
+	Infos             []string                   `protobuf:"bytes,6,rep,name=infos" json:"infos,omitempty"`
 }
 
 func (m *ReportResponse) Reset()                    { *m = ReportResponse{} }
@@ -714,25 +709,25 @@ func (m *ReportResponse) String() string            { return proto.CompactTextSt
 func (*ReportResponse) ProtoMessage()               {}
 func (*ReportResponse) Descriptor() ([]byte, []int) { return fileDescriptorCollector, []int{11} }
 
-func (m *ReportResponse) GetCommands() []Command {
+func (m *ReportResponse) GetCommands() []*Command {
 	if m != nil {
 		return m.Commands
 	}
 	return nil
 }
 
-func (m *ReportResponse) GetReceiveTimestamp() time.Time {
+func (m *ReportResponse) GetReceiveTimestamp() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.ReceiveTimestamp
 	}
-	return time.Time{}
+	return nil
 }
 
-func (m *ReportResponse) GetTransmitTimestamp() time.Time {
+func (m *ReportResponse) GetTransmitTimestamp() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.TransmitTimestamp
 	}
-	return time.Time{}
+	return nil
 }
 
 func (m *ReportResponse) GetErrors() []string {
@@ -845,7 +840,7 @@ var _CollectorService_serviceDesc = grpc.ServiceDesc{
 }
 
 func (m *SpanContext) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -890,7 +885,7 @@ func (m *SpanContext) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *KeyValue) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -964,7 +959,7 @@ func (m *KeyValue_JsonValue) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 func (m *Log) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -978,19 +973,21 @@ func (m *Log) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.Timestamp)))
-	n2, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Timestamp, dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.Timestamp != nil {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.Timestamp.Size()))
+		n2, err := m.Timestamp.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n2
 	}
-	i += n2
 	if len(m.Fields) > 0 {
 		for _, msg := range m.Fields {
 			dAtA[i] = 0x12
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1002,7 +999,7 @@ func (m *Log) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *Reference) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1021,19 +1018,21 @@ func (m *Reference) MarshalTo(dAtA []byte) (int, error) {
 		i++
 		i = encodeVarintCollector(dAtA, i, uint64(m.Relationship))
 	}
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(m.SpanContext.ProtoSize()))
-	n3, err := m.SpanContext.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.SpanContext != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.SpanContext.Size()))
+		n3, err := m.SpanContext.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n3
 	}
-	i += n3
 	return i, nil
 }
 
 func (m *Span) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1047,14 +1046,16 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(m.SpanContext.ProtoSize()))
-	n4, err := m.SpanContext.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.SpanContext != nil {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.SpanContext.Size()))
+		n4, err := m.SpanContext.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n4
 	}
-	i += n4
 	if len(m.OperationName) > 0 {
 		dAtA[i] = 0x12
 		i++
@@ -1065,7 +1066,7 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.References {
 			dAtA[i] = 0x1a
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1073,14 +1074,16 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 			i += n
 		}
 	}
-	dAtA[i] = 0x22
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTimestamp)))
-	n5, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.StartTimestamp, dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.StartTimestamp != nil {
+		dAtA[i] = 0x22
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.StartTimestamp.Size()))
+		n5, err := m.StartTimestamp.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n5
 	}
-	i += n5
 	if m.DurationMicros != 0 {
 		dAtA[i] = 0x28
 		i++
@@ -1090,7 +1093,7 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Tags {
 			dAtA[i] = 0x32
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1102,7 +1105,7 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Logs {
 			dAtA[i] = 0x3a
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1114,7 +1117,7 @@ func (m *Span) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *Reporter) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1137,7 +1140,7 @@ func (m *Reporter) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Tags {
 			dAtA[i] = 0x22
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1149,7 +1152,7 @@ func (m *Reporter) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MetricsSample) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1195,7 +1198,7 @@ func (m *MetricsSample_DoubleValue) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 func (m *InternalMetrics) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1209,14 +1212,16 @@ func (m *InternalMetrics) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTimestamp)))
-	n7, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.StartTimestamp, dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.StartTimestamp != nil {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.StartTimestamp.Size()))
+		n7, err := m.StartTimestamp.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n7
 	}
-	i += n7
 	if m.DurationMicros != 0 {
 		dAtA[i] = 0x10
 		i++
@@ -1226,7 +1231,7 @@ func (m *InternalMetrics) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Logs {
 			dAtA[i] = 0x1a
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1238,7 +1243,7 @@ func (m *InternalMetrics) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Counts {
 			dAtA[i] = 0x22
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1250,7 +1255,7 @@ func (m *InternalMetrics) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Gauges {
 			dAtA[i] = 0x2a
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1262,7 +1267,7 @@ func (m *InternalMetrics) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *Auth) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1286,7 +1291,7 @@ func (m *Auth) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *ReportRequest) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1300,27 +1305,31 @@ func (m *ReportRequest) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(m.Reporter.ProtoSize()))
-	n8, err := m.Reporter.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.Reporter != nil {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.Reporter.Size()))
+		n8, err := m.Reporter.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n8
 	}
-	i += n8
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(m.Auth.ProtoSize()))
-	n9, err := m.Auth.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.Auth != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.Auth.Size()))
+		n9, err := m.Auth.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n9
 	}
-	i += n9
 	if len(m.Spans) > 0 {
 		for _, msg := range m.Spans {
 			dAtA[i] = 0x1a
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1333,19 +1342,21 @@ func (m *ReportRequest) MarshalTo(dAtA []byte) (int, error) {
 		i++
 		i = encodeVarintCollector(dAtA, i, uint64(m.TimestampOffsetMicros))
 	}
-	dAtA[i] = 0x32
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(m.InternalMetrics.ProtoSize()))
-	n10, err := m.InternalMetrics.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.InternalMetrics != nil {
+		dAtA[i] = 0x32
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.InternalMetrics.Size()))
+		n10, err := m.InternalMetrics.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n10
 	}
-	i += n10
 	return i, nil
 }
 
 func (m *Command) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1373,7 +1384,7 @@ func (m *Command) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *ReportResponse) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
+	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
 	if err != nil {
@@ -1391,7 +1402,7 @@ func (m *ReportResponse) MarshalTo(dAtA []byte) (int, error) {
 		for _, msg := range m.Commands {
 			dAtA[i] = 0xa
 			i++
-			i = encodeVarintCollector(dAtA, i, uint64(msg.ProtoSize()))
+			i = encodeVarintCollector(dAtA, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
@@ -1399,22 +1410,26 @@ func (m *ReportResponse) MarshalTo(dAtA []byte) (int, error) {
 			i += n
 		}
 	}
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.ReceiveTimestamp)))
-	n11, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.ReceiveTimestamp, dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.ReceiveTimestamp != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.ReceiveTimestamp.Size()))
+		n11, err := m.ReceiveTimestamp.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n11
 	}
-	i += n11
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintCollector(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.TransmitTimestamp)))
-	n12, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.TransmitTimestamp, dAtA[i:])
-	if err != nil {
-		return 0, err
+	if m.TransmitTimestamp != nil {
+		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintCollector(dAtA, i, uint64(m.TransmitTimestamp.Size()))
+		n12, err := m.TransmitTimestamp.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n12
 	}
-	i += n12
 	if len(m.Errors) > 0 {
 		for _, s := range m.Errors {
 			dAtA[i] = 0x22
@@ -1472,7 +1487,7 @@ func encodeVarintCollector(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return offset + 1
 }
-func (m *SpanContext) ProtoSize() (n int) {
+func (m *SpanContext) Size() (n int) {
 	var l int
 	_ = l
 	if m.TraceId != 0 {
@@ -1492,7 +1507,7 @@ func (m *SpanContext) ProtoSize() (n int) {
 	return n
 }
 
-func (m *KeyValue) ProtoSize() (n int) {
+func (m *KeyValue) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Key)
@@ -1500,104 +1515,112 @@ func (m *KeyValue) ProtoSize() (n int) {
 		n += 1 + l + sovCollector(uint64(l))
 	}
 	if m.Value != nil {
-		n += m.Value.ProtoSize()
+		n += m.Value.Size()
 	}
 	return n
 }
 
-func (m *KeyValue_StringValue) ProtoSize() (n int) {
+func (m *KeyValue_StringValue) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.StringValue)
 	n += 1 + l + sovCollector(uint64(l))
 	return n
 }
-func (m *KeyValue_IntValue) ProtoSize() (n int) {
+func (m *KeyValue_IntValue) Size() (n int) {
 	var l int
 	_ = l
 	n += 1 + sovCollector(uint64(m.IntValue))
 	return n
 }
-func (m *KeyValue_DoubleValue) ProtoSize() (n int) {
+func (m *KeyValue_DoubleValue) Size() (n int) {
 	var l int
 	_ = l
 	n += 9
 	return n
 }
-func (m *KeyValue_BoolValue) ProtoSize() (n int) {
+func (m *KeyValue_BoolValue) Size() (n int) {
 	var l int
 	_ = l
 	n += 2
 	return n
 }
-func (m *KeyValue_JsonValue) ProtoSize() (n int) {
+func (m *KeyValue_JsonValue) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.JsonValue)
 	n += 1 + l + sovCollector(uint64(l))
 	return n
 }
-func (m *Log) ProtoSize() (n int) {
+func (m *Log) Size() (n int) {
 	var l int
 	_ = l
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.Timestamp)
-	n += 1 + l + sovCollector(uint64(l))
+	if m.Timestamp != nil {
+		l = m.Timestamp.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	if len(m.Fields) > 0 {
 		for _, e := range m.Fields {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	return n
 }
 
-func (m *Reference) ProtoSize() (n int) {
+func (m *Reference) Size() (n int) {
 	var l int
 	_ = l
 	if m.Relationship != 0 {
 		n += 1 + sovCollector(uint64(m.Relationship))
 	}
-	l = m.SpanContext.ProtoSize()
-	n += 1 + l + sovCollector(uint64(l))
+	if m.SpanContext != nil {
+		l = m.SpanContext.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	return n
 }
 
-func (m *Span) ProtoSize() (n int) {
+func (m *Span) Size() (n int) {
 	var l int
 	_ = l
-	l = m.SpanContext.ProtoSize()
-	n += 1 + l + sovCollector(uint64(l))
+	if m.SpanContext != nil {
+		l = m.SpanContext.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	l = len(m.OperationName)
 	if l > 0 {
 		n += 1 + l + sovCollector(uint64(l))
 	}
 	if len(m.References) > 0 {
 		for _, e := range m.References {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTimestamp)
-	n += 1 + l + sovCollector(uint64(l))
+	if m.StartTimestamp != nil {
+		l = m.StartTimestamp.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	if m.DurationMicros != 0 {
 		n += 1 + sovCollector(uint64(m.DurationMicros))
 	}
 	if len(m.Tags) > 0 {
 		for _, e := range m.Tags {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	if len(m.Logs) > 0 {
 		for _, e := range m.Logs {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	return n
 }
 
-func (m *Reporter) ProtoSize() (n int) {
+func (m *Reporter) Size() (n int) {
 	var l int
 	_ = l
 	if m.ReporterId != 0 {
@@ -1605,14 +1628,14 @@ func (m *Reporter) ProtoSize() (n int) {
 	}
 	if len(m.Tags) > 0 {
 		for _, e := range m.Tags {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	return n
 }
 
-func (m *MetricsSample) ProtoSize() (n int) {
+func (m *MetricsSample) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Name)
@@ -1620,53 +1643,55 @@ func (m *MetricsSample) ProtoSize() (n int) {
 		n += 1 + l + sovCollector(uint64(l))
 	}
 	if m.Value != nil {
-		n += m.Value.ProtoSize()
+		n += m.Value.Size()
 	}
 	return n
 }
 
-func (m *MetricsSample_IntValue) ProtoSize() (n int) {
+func (m *MetricsSample_IntValue) Size() (n int) {
 	var l int
 	_ = l
 	n += 1 + sovCollector(uint64(m.IntValue))
 	return n
 }
-func (m *MetricsSample_DoubleValue) ProtoSize() (n int) {
+func (m *MetricsSample_DoubleValue) Size() (n int) {
 	var l int
 	_ = l
 	n += 9
 	return n
 }
-func (m *InternalMetrics) ProtoSize() (n int) {
+func (m *InternalMetrics) Size() (n int) {
 	var l int
 	_ = l
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTimestamp)
-	n += 1 + l + sovCollector(uint64(l))
+	if m.StartTimestamp != nil {
+		l = m.StartTimestamp.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	if m.DurationMicros != 0 {
 		n += 1 + sovCollector(uint64(m.DurationMicros))
 	}
 	if len(m.Logs) > 0 {
 		for _, e := range m.Logs {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	if len(m.Counts) > 0 {
 		for _, e := range m.Counts {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	if len(m.Gauges) > 0 {
 		for _, e := range m.Gauges {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	return n
 }
 
-func (m *Auth) ProtoSize() (n int) {
+func (m *Auth) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.AccessToken)
@@ -1676,28 +1701,34 @@ func (m *Auth) ProtoSize() (n int) {
 	return n
 }
 
-func (m *ReportRequest) ProtoSize() (n int) {
+func (m *ReportRequest) Size() (n int) {
 	var l int
 	_ = l
-	l = m.Reporter.ProtoSize()
-	n += 1 + l + sovCollector(uint64(l))
-	l = m.Auth.ProtoSize()
-	n += 1 + l + sovCollector(uint64(l))
+	if m.Reporter != nil {
+		l = m.Reporter.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
+	if m.Auth != nil {
+		l = m.Auth.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	if len(m.Spans) > 0 {
 		for _, e := range m.Spans {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
 	if m.TimestampOffsetMicros != 0 {
 		n += 1 + sovCollector(uint64(m.TimestampOffsetMicros))
 	}
-	l = m.InternalMetrics.ProtoSize()
-	n += 1 + l + sovCollector(uint64(l))
+	if m.InternalMetrics != nil {
+		l = m.InternalMetrics.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	return n
 }
 
-func (m *Command) ProtoSize() (n int) {
+func (m *Command) Size() (n int) {
 	var l int
 	_ = l
 	if m.Disable {
@@ -1706,19 +1737,23 @@ func (m *Command) ProtoSize() (n int) {
 	return n
 }
 
-func (m *ReportResponse) ProtoSize() (n int) {
+func (m *ReportResponse) Size() (n int) {
 	var l int
 	_ = l
 	if len(m.Commands) > 0 {
 		for _, e := range m.Commands {
-			l = e.ProtoSize()
+			l = e.Size()
 			n += 1 + l + sovCollector(uint64(l))
 		}
 	}
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.ReceiveTimestamp)
-	n += 1 + l + sovCollector(uint64(l))
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.TransmitTimestamp)
-	n += 1 + l + sovCollector(uint64(l))
+	if m.ReceiveTimestamp != nil {
+		l = m.ReceiveTimestamp.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
+	if m.TransmitTimestamp != nil {
+		l = m.TransmitTimestamp.Size()
+		n += 1 + l + sovCollector(uint64(l))
+	}
 	if len(m.Errors) > 0 {
 		for _, s := range m.Errors {
 			l = len(s)
@@ -2203,7 +2238,10 @@ func (m *Log) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.Timestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if m.Timestamp == nil {
+				m.Timestamp = &google_protobuf.Timestamp{}
+			}
+			if err := m.Timestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2233,7 +2271,7 @@ func (m *Log) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Fields = append(m.Fields, KeyValue{})
+			m.Fields = append(m.Fields, &KeyValue{})
 			if err := m.Fields[len(m.Fields)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2333,6 +2371,9 @@ func (m *Reference) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			if m.SpanContext == nil {
+				m.SpanContext = &SpanContext{}
+			}
 			if err := m.SpanContext.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2413,6 +2454,9 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			if m.SpanContext == nil {
+				m.SpanContext = &SpanContext{}
+			}
 			if err := m.SpanContext.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2472,7 +2516,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.References = append(m.References, Reference{})
+			m.References = append(m.References, &Reference{})
 			if err := m.References[len(m.References)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2503,7 +2547,10 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.StartTimestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if m.StartTimestamp == nil {
+				m.StartTimestamp = &google_protobuf.Timestamp{}
+			}
+			if err := m.StartTimestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2521,7 +2568,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.DurationMicros |= (int64(b) & 0x7F) << shift
+				m.DurationMicros |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2552,7 +2599,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Tags = append(m.Tags, KeyValue{})
+			m.Tags = append(m.Tags, &KeyValue{})
 			if err := m.Tags[len(m.Tags)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2583,7 +2630,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Logs = append(m.Logs, Log{})
+			m.Logs = append(m.Logs, &Log{})
 			if err := m.Logs[len(m.Logs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2683,7 +2730,7 @@ func (m *Reporter) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Tags = append(m.Tags, KeyValue{})
+			m.Tags = append(m.Tags, &KeyValue{})
 			if err := m.Tags[len(m.Tags)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2874,7 +2921,10 @@ func (m *InternalMetrics) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.StartTimestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if m.StartTimestamp == nil {
+				m.StartTimestamp = &google_protobuf.Timestamp{}
+			}
+			if err := m.StartTimestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2892,7 +2942,7 @@ func (m *InternalMetrics) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.DurationMicros |= (int64(b) & 0x7F) << shift
+				m.DurationMicros |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2923,7 +2973,7 @@ func (m *InternalMetrics) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Logs = append(m.Logs, Log{})
+			m.Logs = append(m.Logs, &Log{})
 			if err := m.Logs[len(m.Logs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2954,7 +3004,7 @@ func (m *InternalMetrics) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Counts = append(m.Counts, MetricsSample{})
+			m.Counts = append(m.Counts, &MetricsSample{})
 			if err := m.Counts[len(m.Counts)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2985,7 +3035,7 @@ func (m *InternalMetrics) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Gauges = append(m.Gauges, MetricsSample{})
+			m.Gauges = append(m.Gauges, &MetricsSample{})
 			if err := m.Gauges[len(m.Gauges)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3145,6 +3195,9 @@ func (m *ReportRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			if m.Reporter == nil {
+				m.Reporter = &Reporter{}
+			}
 			if err := m.Reporter.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3174,6 +3227,9 @@ func (m *ReportRequest) Unmarshal(dAtA []byte) error {
 			postIndex := iNdEx + msglen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
+			}
+			if m.Auth == nil {
+				m.Auth = &Auth{}
 			}
 			if err := m.Auth.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3205,7 +3261,7 @@ func (m *ReportRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Spans = append(m.Spans, Span{})
+			m.Spans = append(m.Spans, &Span{})
 			if err := m.Spans[len(m.Spans)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3224,7 +3280,7 @@ func (m *ReportRequest) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TimestampOffsetMicros |= (int64(b) & 0x7F) << shift
+				m.TimestampOffsetMicros |= (int32(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -3254,6 +3310,9 @@ func (m *ReportRequest) Unmarshal(dAtA []byte) error {
 			postIndex := iNdEx + msglen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
+			}
+			if m.InternalMetrics == nil {
+				m.InternalMetrics = &InternalMetrics{}
 			}
 			if err := m.InternalMetrics.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3405,7 +3464,7 @@ func (m *ReportResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Commands = append(m.Commands, Command{})
+			m.Commands = append(m.Commands, &Command{})
 			if err := m.Commands[len(m.Commands)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3436,7 +3495,10 @@ func (m *ReportResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.ReceiveTimestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if m.ReceiveTimestamp == nil {
+				m.ReceiveTimestamp = &google_protobuf.Timestamp{}
+			}
+			if err := m.ReceiveTimestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3466,7 +3528,10 @@ func (m *ReportResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.TransmitTimestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if m.TransmitTimestamp == nil {
+				m.TransmitTimestamp = &google_protobuf.Timestamp{}
+			}
+			if err := m.TransmitTimestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3688,78 +3753,75 @@ func init() {
 }
 
 var fileDescriptorCollector = []byte{
-	// 1160 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x4b, 0x8f, 0x1b, 0x45,
-	0x10, 0xf6, 0xd8, 0x13, 0x3f, 0xca, 0xce, 0xae, 0xd3, 0x3c, 0xe2, 0x5d, 0x25, 0x5e, 0x33, 0x0b,
-	0xca, 0x02, 0xda, 0xb1, 0xe4, 0x88, 0x87, 0x82, 0xc4, 0xc3, 0x9b, 0x84, 0xb5, 0xf0, 0xe2, 0x30,
-	0x0e, 0x20, 0xe5, 0x62, 0x8d, 0xc7, 0xed, 0xd9, 0x21, 0x33, 0xdd, 0x43, 0x77, 0x7b, 0x21, 0x37,
-	0xc4, 0x81, 0x73, 0x24, 0xc4, 0x1d, 0xc1, 0x2f, 0x81, 0x03, 0x8a, 0xc4, 0x25, 0x12, 0x07, 0x6e,
-	0x80, 0x12, 0x7e, 0x08, 0x9a, 0xee, 0x9e, 0xb1, 0x37, 0x4c, 0x36, 0x59, 0xc4, 0xad, 0xbb, 0xea,
-	0xfb, 0xaa, 0xcb, 0x55, 0x5f, 0x95, 0x07, 0xf6, 0xfc, 0x40, 0x1c, 0x2e, 0xa6, 0xb6, 0x47, 0xa3,
-	0x6e, 0x18, 0xf8, 0x87, 0x82, 0x0b, 0x1c, 0x2f, 0x4f, 0xbb, 0x82, 0xb9, 0x1e, 0x66, 0xbb, 0x1e,
-	0x8d, 0x22, 0x4a, 0xba, 0x22, 0x8a, 0x7d, 0x4c, 0xba, 0x1e, 0x0d, 0x43, 0xec, 0x09, 0xca, 0xec,
-	0x98, 0x51, 0x41, 0xd1, 0x33, 0x19, 0xde, 0xce, 0x5c, 0x9b, 0xbb, 0x2b, 0x91, 0x7d, 0xea, 0xd3,
-	0xae, 0xc4, 0x4e, 0x17, 0x73, 0x79, 0x93, 0x17, 0x79, 0x52, 0x31, 0x36, 0xb7, 0x7c, 0x4a, 0xfd,
-	0x10, 0x2f, 0x51, 0x22, 0x88, 0x30, 0x17, 0x6e, 0x14, 0x6b, 0xc0, 0x05, 0x0d, 0x70, 0xe3, 0xa0,
-	0xeb, 0x12, 0x42, 0x85, 0x2b, 0x02, 0x4a, 0xb8, 0xf2, 0x5a, 0xbf, 0x18, 0x50, 0x1f, 0xc7, 0x2e,
-	0xd9, 0xa3, 0x44, 0xe0, 0x2f, 0x05, 0xda, 0x80, 0xaa, 0x4c, 0x7d, 0x12, 0xcc, 0x5a, 0x46, 0xc7,
-	0xd8, 0x31, 0x9d, 0x8a, 0xbc, 0x0f, 0x66, 0xe8, 0x3c, 0x54, 0x78, 0xec, 0x92, 0xc4, 0x53, 0x94,
-	0x9e, 0x72, 0x72, 0x1d, 0xcc, 0xd0, 0xfb, 0x50, 0x99, 0xba, 0xbe, 0xef, 0xfa, 0xb8, 0x55, 0xea,
-	0x94, 0x76, 0xea, 0xbd, 0x5d, 0x3b, 0xe7, 0x87, 0xd9, 0x2b, 0xcf, 0xd8, 0x7d, 0x85, 0xbf, 0x46,
-	0x04, 0xbb, 0xe3, 0xa4, 0xec, 0xcd, 0x2b, 0xd0, 0x58, 0x75, 0xa0, 0x26, 0x94, 0x6e, 0xe3, 0x3b,
-	0x32, 0x8f, 0x9a, 0x93, 0x1c, 0xd1, 0xb3, 0x70, 0xe6, 0xc8, 0x0d, 0x17, 0x58, 0x66, 0x50, 0x73,
-	0xd4, 0xe5, 0x4a, 0xf1, 0x4d, 0xc3, 0xba, 0x6f, 0x40, 0xf5, 0x03, 0x7c, 0xe7, 0x93, 0xc4, 0x90,
-	0x43, 0xdc, 0x86, 0x06, 0x17, 0x2c, 0x20, 0xfe, 0x64, 0x85, 0xbf, 0x5f, 0x70, 0xea, 0xca, 0xaa,
-	0x68, 0x17, 0xa1, 0x16, 0x10, 0xa1, 0x11, 0xa5, 0x8e, 0xb1, 0x53, 0xda, 0x2f, 0x38, 0xd5, 0x80,
-	0x08, 0xe5, 0xde, 0x86, 0xc6, 0x8c, 0x2e, 0xa6, 0x21, 0xd6, 0x08, 0xb3, 0x63, 0xec, 0x18, 0x49,
-	0x0c, 0x65, 0x55, 0xa0, 0x2d, 0x80, 0x29, 0xa5, 0xa1, 0x86, 0x9c, 0xe9, 0x18, 0x3b, 0xd5, 0xfd,
-	0x82, 0x53, 0x4b, 0x6c, 0x19, 0xe0, 0x33, 0x4e, 0x89, 0x06, 0x94, 0x75, 0x1e, 0xb5, 0xc4, 0x26,
-	0x01, 0xfd, 0x8a, 0xfe, 0x8d, 0xd6, 0x37, 0x06, 0x94, 0x86, 0xd4, 0x47, 0x7d, 0xa8, 0x65, 0x4d,
-	0x95, 0xbf, 0xa9, 0xde, 0xdb, 0xb4, 0x55, 0x57, 0xed, 0xb4, 0xed, 0xf6, 0xcd, 0x14, 0xd1, 0xaf,
-	0xde, 0xfb, 0x63, 0xab, 0x70, 0xf7, 0xcf, 0x2d, 0xc3, 0x59, 0xd2, 0xd0, 0x5b, 0x50, 0x9e, 0x07,
-	0x38, 0x9c, 0xf1, 0x56, 0x51, 0xb6, 0xe8, 0x62, 0x6e, 0x8b, 0xd2, 0x02, 0xf6, 0xcd, 0x24, 0x86,
-	0xa3, 0x29, 0xd6, 0xef, 0x06, 0xd4, 0x1c, 0x3c, 0xc7, 0x0c, 0x13, 0x0f, 0xa3, 0x11, 0x34, 0x18,
-	0x0e, 0x95, 0x8a, 0x0e, 0x03, 0x95, 0xd1, 0x5a, 0xef, 0xd5, 0xdc, 0x80, 0x19, 0xcb, 0x76, 0x56,
-	0x28, 0xce, 0xb1, 0x00, 0x68, 0x00, 0x0d, 0x29, 0x2c, 0x4f, 0x89, 0x43, 0xf6, 0xa6, 0xde, 0xeb,
-	0x3c, 0x49, 0x44, 0x3a, 0xc9, 0x3a, 0x5f, 0x9a, 0x2c, 0x1b, 0x1a, 0xab, 0x0f, 0xa1, 0x06, 0x54,
-	0xf7, 0xf6, 0x07, 0xc3, 0xab, 0x93, 0xd1, 0xf5, 0x66, 0x01, 0x35, 0xa1, 0x71, 0x7d, 0x34, 0x1c,
-	0x8e, 0x3e, 0x1d, 0x4f, 0xae, 0x3b, 0xa3, 0x83, 0xa6, 0x61, 0xfd, 0x58, 0x02, 0x33, 0x09, 0xf9,
-	0xaf, 0x1c, 0x8c, 0xff, 0x9c, 0x03, 0x7a, 0x09, 0xd6, 0x68, 0x8c, 0x99, 0x4c, 0x62, 0x42, 0xdc,
-	0x28, 0x15, 0xeb, 0xd9, 0xcc, 0xfa, 0xa1, 0x1b, 0x61, 0x74, 0x15, 0x80, 0xa5, 0xd5, 0xe1, 0x7a,
-	0x70, 0xda, 0x27, 0x17, 0x51, 0xbf, 0xb6, 0xc2, 0x43, 0x07, 0xb0, 0xce, 0x85, 0xcb, 0xc4, 0x64,
-	0xa9, 0x10, 0xf3, 0x14, 0x0a, 0x59, 0x93, 0xe4, 0xcc, 0x83, 0x2e, 0xc1, 0xfa, 0x6c, 0xa1, 0x53,
-	0x8f, 0x02, 0x8f, 0x51, 0x2e, 0x25, 0x5c, 0x72, 0xd6, 0x52, 0xf3, 0x81, 0xb4, 0xa2, 0x37, 0xc0,
-	0x14, 0xae, 0xcf, 0x5b, 0xe5, 0xa7, 0x57, 0x93, 0x24, 0xa0, 0x1e, 0x98, 0x21, 0xf5, 0x79, 0xab,
-	0x22, 0x89, 0xad, 0x5c, 0xe2, 0x90, 0xfa, 0x29, 0x27, 0xc1, 0x5a, 0x33, 0xa8, 0x3a, 0x38, 0xa6,
-	0x4c, 0x60, 0x86, 0xb6, 0xa0, 0xce, 0xf4, 0x79, 0xb9, 0xa3, 0x20, 0x35, 0x0d, 0x66, 0x59, 0x66,
-	0xe6, 0x29, 0x33, 0xb3, 0x62, 0x38, 0x7b, 0x80, 0x05, 0x0b, 0x3c, 0x3e, 0x76, 0xa3, 0x38, 0xc4,
-	0x08, 0x81, 0x29, 0xdb, 0xa7, 0xd6, 0x88, 0x3c, 0x1f, 0x5f, 0x11, 0xc5, 0x27, 0xae, 0x88, 0x52,
-	0xce, 0x8a, 0x58, 0x0e, 0xf8, 0x4f, 0x45, 0x58, 0x1f, 0x10, 0x81, 0x19, 0x71, 0x43, 0xfd, 0x74,
-	0x5e, 0x43, 0x8d, 0xff, 0xb7, 0xa1, 0xc5, 0xdc, 0x86, 0xa6, 0x7d, 0x29, 0x3d, 0x7d, 0x5f, 0xd0,
-	0xbb, 0x50, 0xf6, 0xe8, 0x82, 0x88, 0xb4, 0xd8, 0x56, 0x2e, 0xeb, 0x58, 0x51, 0xd3, 0xcd, 0xa2,
-	0x78, 0x49, 0x04, 0xdf, 0x5d, 0xf8, 0x38, 0x91, 0xd9, 0x29, 0x23, 0x28, 0x9e, 0xf5, 0x32, 0x98,
-	0xef, 0x2d, 0xc4, 0x21, 0x7a, 0x01, 0x1a, 0xae, 0xe7, 0x61, 0xce, 0x27, 0x82, 0xde, 0xc6, 0x44,
-	0x37, 0xad, 0xae, 0x6c, 0x37, 0x13, 0x93, 0xf5, 0x6b, 0x11, 0xce, 0x2a, 0x1d, 0x39, 0xf8, 0xf3,
-	0x05, 0xe6, 0x02, 0xbd, 0x03, 0xd5, 0x54, 0x39, 0xba, 0xca, 0x17, 0x1f, 0x33, 0x81, 0x0a, 0xa4,
-	0xdf, 0xce, 0x48, 0xe8, 0x32, 0x98, 0xee, 0x42, 0x1c, 0xea, 0x95, 0xb5, 0x91, 0x4b, 0x4e, 0xd2,
-	0x4b, 0xcb, 0x96, 0x80, 0xd1, 0x6b, 0x70, 0x26, 0xd9, 0x17, 0x69, 0xad, 0x37, 0x1e, 0xbb, 0x64,
-	0x34, 0x4b, 0xa1, 0xd1, 0xeb, 0x70, 0x3e, 0xd3, 0xc4, 0x84, 0xce, 0xe7, 0x1c, 0x8b, 0xe3, 0x33,
-	0xfa, 0x5c, 0xe6, 0x1e, 0x49, 0xaf, 0xee, 0xec, 0xc7, 0xd0, 0x0c, 0xb4, 0xc8, 0x26, 0x91, 0xaa,
-	0xa4, 0xfc, 0xdb, 0xa9, 0xf7, 0x5e, 0xcc, 0x7d, 0xf9, 0x11, 0x45, 0xea, 0x24, 0xd6, 0x83, 0xe3,
-	0x66, 0x6b, 0x1b, 0x2a, 0x7b, 0x34, 0x8a, 0x5c, 0x32, 0x43, 0x2d, 0xa8, 0xcc, 0x02, 0xee, 0x4e,
-	0x43, 0x35, 0x2b, 0x55, 0x27, 0xbd, 0x5a, 0x3f, 0x17, 0x61, 0x2d, 0x2d, 0x39, 0x8f, 0x29, 0xe1,
-	0x18, 0xbd, 0x0d, 0x55, 0x4f, 0xf1, 0x78, 0xcb, 0x90, 0x05, 0xb8, 0x90, 0x9b, 0x86, 0x0e, 0x9e,
-	0x96, 0x3c, 0xe5, 0xa0, 0x8f, 0xe0, 0x1c, 0xc3, 0x1e, 0x0e, 0x8e, 0xf0, 0xca, 0x88, 0x14, 0x4f,
-	0x31, 0x22, 0x4d, 0x4d, 0x5f, 0x0e, 0xc9, 0x18, 0x90, 0x60, 0x2e, 0xe1, 0x51, 0xb0, 0x3a, 0x76,
-	0xa5, 0x53, 0xc4, 0x3c, 0x97, 0xf2, 0x97, 0x41, 0x9f, 0x87, 0x32, 0x66, 0x8c, 0x32, 0x35, 0x1c,
-	0x35, 0x47, 0xdf, 0xd0, 0x26, 0x54, 0xbf, 0x70, 0x19, 0x09, 0x88, 0xaf, 0x44, 0x5f, 0x73, 0xb2,
-	0x7b, 0xf2, 0x79, 0x13, 0x90, 0x39, 0x55, 0x6b, 0xb5, 0xe6, 0xa8, 0x4b, 0xef, 0x3b, 0x03, 0x9a,
-	0x7b, 0x69, 0x5d, 0xc6, 0x98, 0x1d, 0x05, 0x1e, 0x46, 0x5f, 0x19, 0x50, 0x56, 0x95, 0x45, 0xd6,
-	0x09, 0x9a, 0xd5, 0x4a, 0xdf, 0xdc, 0x3e, 0x11, 0xa3, 0x5a, 0x63, 0xed, 0x7e, 0xfd, 0xdb, 0xdf,
-	0xdf, 0x16, 0x2f, 0x59, 0xeb, 0xf2, 0x63, 0xf1, 0xa8, 0xd7, 0x55, 0x3a, 0xe7, 0x57, 0x8c, 0x57,
-	0x6e, 0x9d, 0x43, 0x8f, 0x5a, 0xfb, 0xd7, 0xee, 0x3d, 0x68, 0x1b, 0xf7, 0x1f, 0xb4, 0x8d, 0xbf,
-	0x1e, 0xb4, 0x0b, 0x77, 0x1f, 0xb6, 0x0b, 0xdf, 0x3f, 0x6c, 0x1b, 0xb0, 0xe1, 0xd1, 0x68, 0xe5,
-	0x31, 0xf5, 0x21, 0x6c, 0xfb, 0x2c, 0xf6, 0x6e, 0x18, 0xb7, 0xea, 0xd9, 0xdb, 0xf1, 0xf4, 0x87,
-	0xa2, 0x39, 0x1c, 0xdf, 0xe8, 0x4f, 0xcb, 0xb2, 0xb2, 0x97, 0xff, 0x09, 0x00, 0x00, 0xff, 0xff,
-	0x9f, 0x2b, 0xad, 0xb2, 0x53, 0x0b, 0x00, 0x00,
+	// 1112 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xdf, 0x6e, 0xe3, 0xc4,
+	0x17, 0xae, 0x13, 0x37, 0x7f, 0x4e, 0xd2, 0x36, 0x9d, 0xdf, 0x0f, 0x36, 0x8d, 0xb6, 0x6d, 0x70,
+	0x41, 0x5b, 0xfe, 0xd4, 0x11, 0x41, 0xa0, 0xd2, 0x0b, 0xa4, 0x6d, 0xa0, 0xdb, 0x88, 0x94, 0xac,
+	0xa6, 0x2b, 0x90, 0xf6, 0x82, 0xc8, 0x71, 0x26, 0xae, 0x59, 0x7b, 0xc6, 0xcc, 0x4c, 0x0a, 0xbd,
+	0x03, 0x9e, 0x00, 0x09, 0xf1, 0x02, 0x48, 0x48, 0xdc, 0xf3, 0x0e, 0x88, 0xcb, 0x45, 0xbc, 0x00,
+	0x2a, 0x3c, 0x08, 0xf2, 0x8c, 0xed, 0xa4, 0x8b, 0xb7, 0xad, 0x10, 0x77, 0x3e, 0x67, 0xbe, 0x6f,
+	0xce, 0xf1, 0xf9, 0xbe, 0xe3, 0x04, 0x7a, 0x9e, 0x2f, 0xcf, 0x66, 0x63, 0xdb, 0x65, 0x61, 0x27,
+	0xf0, 0xbd, 0x33, 0x29, 0x24, 0x89, 0xe6, 0x4f, 0x7b, 0x92, 0x3b, 0x2e, 0xe1, 0x7b, 0x2e, 0x0b,
+	0x43, 0x46, 0x3b, 0x32, 0x8c, 0x3c, 0x42, 0x3b, 0x2e, 0x0b, 0x02, 0xe2, 0x4a, 0xc6, 0xed, 0x88,
+	0x33, 0xc9, 0xd0, 0xff, 0x32, 0xbc, 0x9d, 0x1d, 0xb5, 0xb6, 0x3d, 0xc6, 0xbc, 0x80, 0x74, 0x14,
+	0x64, 0x3c, 0x9b, 0x76, 0xa4, 0x1f, 0x12, 0x21, 0x9d, 0x30, 0xd2, 0xac, 0xd6, 0xdd, 0x04, 0xe0,
+	0x44, 0x7e, 0xc7, 0xa1, 0x94, 0x49, 0x47, 0xfa, 0x8c, 0x0a, 0x7d, 0x6a, 0xfd, 0x62, 0x40, 0xed,
+	0x34, 0x72, 0x68, 0x8f, 0x51, 0x49, 0xbe, 0x94, 0x68, 0x03, 0x2a, 0xaa, 0x97, 0x91, 0x3f, 0x69,
+	0x1a, 0x6d, 0x63, 0xd7, 0xc4, 0x65, 0x15, 0xf7, 0x27, 0xe8, 0x0e, 0x94, 0x45, 0xe4, 0xd0, 0xf8,
+	0xa4, 0xa0, 0x4e, 0x4a, 0x71, 0xd8, 0x9f, 0xa0, 0x07, 0x50, 0x1e, 0x3b, 0x9e, 0xe7, 0x78, 0xa4,
+	0x59, 0x6c, 0x17, 0x77, 0x6b, 0xdd, 0x3d, 0x3b, 0xa7, 0x53, 0x7b, 0xa1, 0x8c, 0x7d, 0xa8, 0xf1,
+	0x1f, 0x50, 0xc9, 0x2f, 0x70, 0xca, 0x6e, 0x1d, 0x40, 0x7d, 0xf1, 0x00, 0x35, 0xa0, 0xf8, 0x84,
+	0x5c, 0xa8, 0x3e, 0xaa, 0x38, 0x7e, 0x44, 0xff, 0x87, 0xe5, 0x73, 0x27, 0x98, 0x11, 0xd5, 0x41,
+	0x15, 0xeb, 0xe0, 0xa0, 0xb0, 0x6f, 0x58, 0x4f, 0x0d, 0xa8, 0x7c, 0x48, 0x2e, 0x3e, 0x8e, 0x13,
+	0x39, 0xc4, 0x1d, 0xa8, 0x0b, 0xc9, 0x7d, 0xea, 0x8d, 0x16, 0xf8, 0xc7, 0x4b, 0xb8, 0xa6, 0xb3,
+	0x9a, 0xb6, 0x09, 0x55, 0x9f, 0xca, 0x04, 0x51, 0x6c, 0x1b, 0xbb, 0xc5, 0xe3, 0x25, 0x5c, 0xf1,
+	0xa9, 0xd4, 0xc7, 0x3b, 0x50, 0x9f, 0xb0, 0xd9, 0x38, 0x20, 0x09, 0xc2, 0x6c, 0x1b, 0xbb, 0x46,
+	0x7c, 0x87, 0xce, 0x6a, 0xd0, 0x36, 0xc0, 0x98, 0xb1, 0x20, 0x81, 0x2c, 0xb7, 0x8d, 0xdd, 0xca,
+	0xf1, 0x12, 0xae, 0xc6, 0xb9, 0x0c, 0xf0, 0x99, 0x60, 0x34, 0x01, 0x94, 0x92, 0x3e, 0xaa, 0x71,
+	0x4e, 0x01, 0x0e, 0xcb, 0xc9, 0x3b, 0x5a, 0xe7, 0x50, 0x1c, 0x30, 0x0f, 0xed, 0x43, 0x35, 0xd3,
+	0x54, 0xbd, 0x52, 0xad, 0xdb, 0xb2, 0xb5, 0xa8, 0x76, 0xaa, 0xba, 0xfd, 0x28, 0x45, 0xe0, 0x39,
+	0x18, 0xbd, 0x0d, 0xa5, 0xa9, 0x4f, 0x82, 0x89, 0x68, 0x16, 0x94, 0x2e, 0x9b, 0xb9, 0xba, 0xa4,
+	0x53, 0xc3, 0x09, 0xd8, 0xfa, 0xcd, 0x80, 0x2a, 0x26, 0x53, 0xc2, 0x09, 0x75, 0x09, 0x1a, 0x42,
+	0x9d, 0x93, 0x40, 0x9b, 0xe6, 0xcc, 0xd7, 0x1d, 0xac, 0x76, 0x5f, 0xcf, 0xbd, 0x2a, 0x63, 0xd9,
+	0x78, 0x81, 0x82, 0xaf, 0x5c, 0x80, 0x7a, 0x50, 0x57, 0x3e, 0x72, 0xb5, 0x17, 0x94, 0x14, 0xb5,
+	0x6e, 0xfb, 0x26, 0xcf, 0xe0, 0x9a, 0x98, 0x07, 0x96, 0x0d, 0xf5, 0xc5, 0x12, 0xa8, 0x0e, 0x95,
+	0xde, 0x71, 0x7f, 0xf0, 0xfe, 0x68, 0x78, 0xd4, 0x58, 0x42, 0x0d, 0xa8, 0x1f, 0x0d, 0x07, 0x83,
+	0xe1, 0x27, 0xa7, 0xa3, 0x23, 0x3c, 0x3c, 0x69, 0x18, 0xd6, 0xd7, 0x45, 0x30, 0xe3, 0xcb, 0xfe,
+	0x51, 0xdd, 0xf8, 0x17, 0xd5, 0xd1, 0x2b, 0xb0, 0xca, 0x22, 0xc2, 0x55, 0xf9, 0x11, 0x75, 0xc2,
+	0xd4, 0x8f, 0x2b, 0x59, 0xf6, 0x23, 0x27, 0x24, 0xe8, 0x3d, 0x00, 0x9e, 0x4e, 0x44, 0x24, 0xbb,
+	0xb1, 0x75, 0xfd, 0xe0, 0xf0, 0x02, 0x03, 0xf5, 0x60, 0x4d, 0x48, 0x87, 0xcb, 0xd1, 0x5c, 0x7f,
+	0xf3, 0x46, 0xfd, 0x57, 0x15, 0x25, 0x8b, 0xd1, 0x3d, 0x58, 0x9b, 0xcc, 0x92, 0x56, 0x43, 0xdf,
+	0xe5, 0x4c, 0x28, 0x57, 0x9a, 0x78, 0x35, 0x4d, 0x9f, 0xa8, 0x2c, 0x7a, 0x13, 0x4c, 0xe9, 0x78,
+	0xa2, 0x59, 0xba, 0x8d, 0x57, 0x14, 0x14, 0xbd, 0x01, 0x66, 0xc0, 0x3c, 0xd1, 0x2c, 0x2b, 0x4a,
+	0x33, 0x97, 0x32, 0x60, 0x1e, 0x56, 0x28, 0xeb, 0x53, 0xa8, 0x60, 0x12, 0x31, 0x2e, 0x09, 0x47,
+	0xdb, 0x50, 0xe3, 0xc9, 0xf3, 0xfc, 0x53, 0x03, 0x69, 0xaa, 0x3f, 0xc9, 0xba, 0x31, 0x6f, 0xdd,
+	0x8d, 0x15, 0xc1, 0xca, 0x09, 0x91, 0xdc, 0x77, 0xc5, 0xa9, 0x13, 0x46, 0x01, 0x41, 0x08, 0x4c,
+	0x25, 0x8e, 0xfe, 0x0e, 0xa8, 0xe7, 0xab, 0x3b, 0x5e, 0xb8, 0x71, 0xc7, 0x8b, 0x39, 0x3b, 0x3e,
+	0xdf, 0xd0, 0x1f, 0x0b, 0xb0, 0xd6, 0xa7, 0x92, 0x70, 0xea, 0x04, 0x49, 0xe9, 0x3c, 0xd1, 0x8c,
+	0xff, 0x42, 0xb4, 0x42, 0xae, 0x68, 0xa9, 0x02, 0xc5, 0xdb, 0x28, 0x80, 0x0e, 0xa0, 0xe4, 0xb2,
+	0x19, 0x95, 0xe9, 0x58, 0xad, 0x5c, 0xfc, 0x95, 0x21, 0xe2, 0x84, 0x11, 0x73, 0x3d, 0x67, 0xe6,
+	0x91, 0xd8, 0x3e, 0xb7, 0xe6, 0x6a, 0x86, 0xf5, 0x2a, 0x98, 0xf7, 0x67, 0xf2, 0x0c, 0xbd, 0x04,
+	0x75, 0xc7, 0x75, 0x89, 0x10, 0x23, 0xc9, 0x9e, 0x10, 0x9a, 0x08, 0x53, 0xd3, 0xb9, 0x47, 0x71,
+	0xca, 0xfa, 0xb9, 0x00, 0x2b, 0xda, 0x25, 0x98, 0x7c, 0x3e, 0x23, 0x42, 0xa2, 0x77, 0xa1, 0x92,
+	0xfa, 0x22, 0x99, 0xe4, 0xe6, 0x73, 0x76, 0x48, 0x83, 0x70, 0x06, 0x47, 0x7b, 0x60, 0x3a, 0x33,
+	0x79, 0x96, 0x7c, 0x62, 0x36, 0x72, 0x69, 0x71, 0x63, 0x58, 0xc1, 0x50, 0x07, 0x96, 0xe3, 0x2d,
+	0x4f, 0xa7, 0xb9, 0xf1, 0xdc, 0x8f, 0x02, 0xd6, 0x38, 0xf4, 0x0e, 0xdc, 0xc9, 0x54, 0x1e, 0xb1,
+	0xe9, 0x54, 0x10, 0xb9, 0xb8, 0x63, 0xcb, 0xf8, 0x85, 0xec, 0x78, 0xa8, 0x4e, 0x13, 0xd5, 0x86,
+	0xd0, 0xf0, 0x13, 0xdb, 0x8c, 0x42, 0x3d, 0x31, 0xf5, 0x4b, 0x50, 0xeb, 0xbe, 0x9c, 0x5b, 0xf3,
+	0x19, 0x8f, 0xe1, 0x35, 0xff, 0x6a, 0xc2, 0xda, 0x81, 0x72, 0x8f, 0x85, 0xa1, 0x43, 0x27, 0xa8,
+	0x09, 0xe5, 0x89, 0x2f, 0x9c, 0x71, 0xa0, 0x7d, 0x5f, 0xc1, 0x69, 0x68, 0xfd, 0x54, 0x80, 0xd5,
+	0x74, 0xb4, 0x22, 0x62, 0x54, 0x10, 0xb4, 0x0f, 0x15, 0x57, 0xf3, 0x44, 0xd3, 0x50, 0x2f, 0x7d,
+	0x37, 0xb7, 0x81, 0xe4, 0x72, 0x9c, 0xa1, 0xd1, 0x03, 0x58, 0xe7, 0xc4, 0x25, 0xfe, 0x39, 0x59,
+	0x30, 0x7a, 0xe1, 0x46, 0xa3, 0x37, 0x12, 0xd2, 0xdc, 0xea, 0x7d, 0x40, 0x92, 0x3b, 0x54, 0x84,
+	0xfe, 0xe2, 0xca, 0x14, 0x6f, 0xbc, 0x69, 0x3d, 0x65, 0xcd, 0xaf, 0x7a, 0x11, 0x4a, 0x84, 0x73,
+	0xc6, 0xb5, 0xbd, 0xab, 0x38, 0x89, 0x50, 0x0b, 0x2a, 0x5f, 0x38, 0x9c, 0xfa, 0xd4, 0xd3, 0xe6,
+	0xad, 0xe2, 0x2c, 0x8e, 0xff, 0x51, 0xf8, 0x74, 0xca, 0xf4, 0x67, 0xaf, 0x8a, 0x75, 0xd0, 0xfd,
+	0xde, 0x80, 0x46, 0x2f, 0x7d, 0xfb, 0x53, 0xc2, 0xcf, 0x7d, 0x97, 0xa0, 0xaf, 0x0c, 0x28, 0xe9,
+	0xf9, 0x21, 0xeb, 0x1a, 0x07, 0x26, 0xbe, 0x6d, 0xed, 0x5c, 0x8b, 0xd1, 0x02, 0x58, 0x7b, 0xdf,
+	0xfc, 0xfe, 0xd7, 0x77, 0x85, 0x7b, 0xd6, 0x9a, 0xfa, 0x7f, 0x76, 0xde, 0xed, 0x68, 0xef, 0x8a,
+	0x03, 0xe3, 0xb5, 0xc7, 0xeb, 0xe8, 0xd9, 0xec, 0xe1, 0xfd, 0x5f, 0x2f, 0xb7, 0x8c, 0xa7, 0x97,
+	0x5b, 0xc6, 0x1f, 0x97, 0x5b, 0xc6, 0xb7, 0x7f, 0x6e, 0x2d, 0xc1, 0x86, 0xcb, 0xc2, 0x85, 0x42,
+	0xfa, 0x8f, 0xa4, 0xed, 0xf1, 0xc8, 0x7d, 0x68, 0x3c, 0xae, 0x65, 0x75, 0xa3, 0xf1, 0x0f, 0x05,
+	0x73, 0x70, 0xfa, 0xf0, 0x70, 0x5c, 0x52, 0xb3, 0x7c, 0xeb, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0x58, 0x27, 0xfa, 0x50, 0x93, 0x0a, 0x00, 0x00,
 }
