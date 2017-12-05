@@ -37,6 +37,7 @@ build: test
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES) 
 
 test: $(TEST_SOURCES)
+	dep ensure && dep prune
 	go test -v ./golang
 
 clean: 
