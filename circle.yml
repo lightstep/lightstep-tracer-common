@@ -9,8 +9,20 @@ machine:
 
 dependencies:
   pre:
+
+dependencies:
+  pre:
+    # Move the build target into its proper Go place
+    - mkdir -p ${GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}
+    - mv ${HOME}/${CIRCLE_PROJECT_REPONAME} ${BUILD_DIR}
+    # Symlink back to make CircleCI tools happier
+    - ln -s ${BUILD_DIR} ${HOME}/${CIRCLE_PROJECT_REPONAME}
     - go get github.com/golang/dep/...
     - go install github.com/golang/dep/...
+  override:
+    - make -C ${BUILD_DIR} build
+  cache_directories:
+    - ~/bin
 
 test:
   override:
