@@ -1,26 +1,64 @@
-.PHONY: default build test
-
 default: build
 
-build: clean-proto proto
+genproto.mk:
+	@docker pull lightstep/gogoprotoc:latest
+	@-docker rm -v lightstep-get-genproto-mk
+	@docker create --name lightstep-get-genproto-mk lightstep/gogoprotoc:latest
+	@docker cp lightstep-get-genproto-mk:/root/genproto.mk genproto.mk
+	@docker rm -v lightstep-get-genproto-mk
 
-test: build
+include genproto.mk
 
-PROTO_GEN = lightsteppb/lightstep_carrier.pb.go collectorpb/collector.pb.go
+PKG_PREFIX = github.com/lightstep/lightstep-tracer-common
 
-.PHONY: proto clean-proto
+PROTO_SOURCES = \
+	collector.proto \
+	lightstep.proto
 
-clean-proto:
-	@rm -f $(PROTO_GEN)
+TEST_SOURCES = \
+	$(GOLANG)/gogo_test.go \
+	$(GOLANG)/protobuf_test.go
 
-proto: $(PROTO_GEN)
+GOGO_GENTGTS = $(call protos_to_gogo_targets,$(PROTO_SOURCES))
+PBUF_GENTGTS = $(call protos_to_protobuf_targets,$(PROTO_SOURCES))
 
-collectorpb/collector.pb.go: collector.proto
-	docker run --rm -v $(shell pwd):/input:ro -v $(shell pwd)/collectorpb:/output \
-	  lightstep/grpc-gateway:latest \
-		protoc -I/root/go/src/tmp/vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:/output --proto_path=/input /input/collector.proto
+GOGO_LINKS  = $(call protoc_targets_to_link_targets,$(GOGO_GENTGTS))
+PBUF_LINKS  = $(call protoc_targets_to_link_targets,$(PBUF_GENTGTS))
 
-lightsteppb/lightstep_carrier.pb.go: lightstep_carrier.proto
-	docker run --rm -v $(shell pwd):/input:ro -v $(shell pwd)/lightsteppb:/output \
-	  lightstep/protoc:latest \
-	  protoc --go_out=plugins=grpc:/output --proto_path=/input /input/lightstep_carrier.proto
+FAKES = \
+	golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go \
+	golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go
+
+.PHONY: default build test clean proto-links proto
+.PHONY: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(GOGO_LINKS) $(PBUF_LINKS)
+
+build: test
+
+proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES) 
+
+test: $(TEST_SOURCES)
+	$(GOPATH)/bin/dep ensure && $(GOPATH)/bin/dep prune
+	go test -v ./golang
+
+clean: 
+	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
+
+proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
+
+$(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto
+	$(call gen_protoc_link,$<,$@,$(GOGO))
+
+$(PBUF_LINKS): $(GOLANG)-$(PBUF)-%-link: %.proto
+	$(call gen_protoc_link,$<,$@,$(PBUF))
+
+$(GOGO_GENTGTS): $(GOLANG)-$(GOGO)-%: %.proto proto-links
+	$(call gen_gogo_target,$<)
+
+$(PBUF_GENTGTS): $(GOLANG)-$(PBUF)-%: %.proto proto-links
+	$(call gen_protobuf_target,$<)
+
+golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/gogo/collectorpb/collector.pb.go
+	$(call generate_fake,$@,$<,CollectorServiceClient)
+
+golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/protobuf/collectorpb/collector.pb.go
+	$(call generate_fake,$@,$<,CollectorServiceClient)
