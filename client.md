@@ -1,7 +1,7 @@
 # LightStep Tracer Client v3 Specification
 
 LightStep Engineering
-May 2, 2018
+May 3, 2018
 
 ## Overview
 
@@ -51,7 +51,7 @@ important scenarios for consideration as follows:
 * New spans produced while the buffer of pending data is full
 * Non-retryable failures received before the timeout
 * Reporting timeout received
-* When user code creates excessively large spans or logs
+* User code creates excessively large spans or logs
 
 In these cases, this document will specify how clients should behave,
 in the mutual interest of valuing client resources, delivering
@@ -90,8 +90,8 @@ user-interpretable fields:
 2. **auth**:     describes the access token associated with the batch of spans
 3. **spans**:    the main payload, a list of span structs
 
-Reports must be smaller than 16MB when serialized as a
-binary-encoded protocol message.
+Reports must be smaller than 4MB when serialized as a binary-encoded
+protocol message.
 
 #### Reporter
 
@@ -147,27 +147,105 @@ same protocol definition and are committed to gRPC support on the
 server, meaning that user-defined transport implementations may use
 the gRPC [`lightstep.collector.CollectorService.Report`](https://github.com/lightstep/lightstep-tracer-common/blob/4c649d1a7ac52b9cafc7f8d21fe304f8fa4a4ae3/collector.proto#L105) endpoint.
 
+Client libraries may be viewed as an assembly of two parts, one an
+implementation of "pure" tracing, and the other a facility to send
+data to LightStep.  We will refer to these as the top half and the
+bottom half, respectively.
+
+There are several competing interests present when designing client
+libraries, which we prioritize as follows:
+
+1. Do not harm the application
+1. Do not harm the LightStep service
+1. Send as much data as possible
+1. Do not waste resources
+
+First and second generation LightStep client libraries offered several
+resource- and performance-related parameters, notably: (1) limit on
+number of buffered spans, (2) minimum flush period, (3) maximum flush
+period, (4) report timeout.  Those libraries were restricted to a
+maximum of one simultaneous Report being sent at a time, making these
+parameters easy to interpret but difficult to tune.  Third generation
+client libraries will be configured by a new set of parameters:
+
+Name               | Interpretation
+------------------ | --------------
+`max_memory`       | Number of bytes of memory used (top)
+`max_report_size`  | Limits the size of an outgoing report (bottom)
+`max_concurrency`  | Number of CPUs dedicated to sending reports (bottom)
+`max_flush_period` | Prevent sending more frequently (bottom)
+
+The `max_memory` parameter applies only to the top half of the
+library.  Users should assume that each concurrent sender may use up
+to `max_report_size` of memory while sending reports.  The priorities
+listed above should be used to determine client behavior, without need
+for additional tuning parameters.
+
+We expect that on most language platforms, a single default transport
+implementation will be sufficient to provide an acceptable range of
+performance, from highly-constrained mobile devices to high-resource
+network proxies, subject to these priorities.  For example, a single
+Java transport implementation should perform well on both Android
+devices and on large servers, subject to different resource limits.
+
+#### Note about built-in safety
+
+Client libraries are expected to use built-in facilities such as
+string formatting and JSON marshalling when producing reports, and are
+therefore only as safe as those facilities.  This risk is passed on to
+the programmer.
+
+#### Note about protocol buffers
+
+Protocol buffer library support varies significantly by language, and
+where there are choices to be made, user opinions should be respected.
+When user-defined transport is selected, and where the language makes
+it possible to do so, the top-half of the client library will make
+efforts not to constraint the bottom half's choice of protocol
+library.
+
+Taking this one step further, there are platforms where protocol
+libraries themselves are undesireable due to code size.  Where this is
+the case, by necessity, client libraries should permit user-defined
+transport without a protocol buffer library, where the assumption is a
+built-in JSON-encoder will be used instead.
+
 ### User-defined transport
 
-    TODO: Add detail section.  Note that the LightStep C++,
-    Golang, and Java tracers are already factored for
-    user-defined transport.  This exercise is only needed for
-    Objective-C.
+The goal of user-defined transport is to insert an abstraction between
+the top-half and bottom-half of a client library, allowing the user to
+supply a custom bottom half.  This type partly exists in some of the
+libraries, for example a `Recorder` in
+[C++](https://github.com/lightstep/lightstep-tracer-cpp/blob/4ea8bda9aed08ad45d6db2a030a1464e8d9b783f/src/recorder.h#L9)
+and a `SpanRecorder` in
+[Golang](https://github.com/lightstep/lightstep-tracer-go/blob/644c3d5ecbd0499c50a1329f89ba287921fc1144/options.go#L66),
+but the interface is not currently consistent.  Java has multiple transport
+options, but no facility for a user-provided transport, while
+Objective-C has only a single transport option.
 
-Note: LightStep will continue to support a gRPC endpoint for
-receiving reports.  User-defined transport may continue to use
-gRPC for forwarding reports to LightStep.
+    TODO: Add detail section on the desired, consistent interface
+    between the top half and bottom half of the client library.
+
+### Default transport implementation
+
+    TODO: Document and give pseudo-code for managing the tension
+    between report size, concurrency level, timeout, and backoff.
 
 ## Span context carrier
 
-LightStep supports several ways to transport ("carry") span
-context between applications.  There are several different terms
-used to describe this support in OpenTracing, which have
-unfortunately
+LightStep supports several ways to transport ("carry") span context
+between applications.  There are several different terms used to
+describe this support in OpenTracing, which has led to a confusing,
+incomplete matrix of carrier support across client libraries.
 
 - *Carrier format*: describes the logical type of the data, interpreted by the vendor
 - *Value type*: describes the type of value passed to and from inject / extract
 - *Encoding type*: describes how the context will be encoded, whether as a single base64-encoded header or multiple text headers, for example.
 
+    TODO: Clarify the current state of the world.
+
     TODO: Specify which combinations of the above must be supported
     for third-generation client libraries.
+
+    TODO: Widen the SpanContext trace_id to 128 bits to match the W3C
+    trace propagation spec.
