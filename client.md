@@ -12,59 +12,50 @@ Like that document, this is intended to coordinate cross-language
 development and necessarily stays away from language-specific and
 toolchain-specific discussion.
 
-This specification defines the third generation of LightStep
-client libraries. Whereas the first generation of library used
-Thrift encoding and transport, and the second generation of
-library offered both Thrift and gRPC options for transport, third
-generation client libraries improve support for high-throughput
-reporting in high-resource environments, low-overhead reporting
-in low-resource environments, and application-controlled
-reporting for those that want deeper integration.  Thrift is
-de-supported in third-generation client libraries.  There are
-four broad categories of improvement:
+This specification defines the third generation of LightStep client
+libraries.  Whereas first generation client libraries offered Thrift
+transport, and second generation client libraries added gRPC support,
+third generation libraries remove both of these in favor of raw http/2
+transport using either protobuf or JSON encoding.  Third generation
+client libraries are expected to perform efficiently in both
+high-throughput and low-resource environments.  Third generation
+client libraries offer a user-defined transport option, allowing
+applications to customize transport and augment tracing data outside
+the process.
 
-1. Specified `protobuf` report protocol for application-specific use
-1. Factor existing transport options
-  - User-defined transport interface
-  - http/2 transport implementation
-1. Current binary and text carrier formats
-1. New customization:
-  - Option to limit buffered memory usage
-  - Option to disable clock correction
+LightStep tracer libraries will be packaged and built such that users
+have fine-grain control over which tracer dependencies are used at
+runtime, using standard build tools and package-distribution
+mechanisms for each language.  This document currently covers efforts
+to upgrade client libraries to match this specification across three
+server-language platforms (Java/JRE, Golang, and C++11) and two
+mobile-language platforms (Java/Android, Obj-C/iOS).  This document
+also describes the appropriate level of testing and benchmarking to
+include with each client library.
 
-LightStep tracer libraries will be packaged and built such that
-users have fine-grain control over which tracer dependencies are
-used at runtime, using standard build tools and
-package-distribution mechanisms for each language.  This document
-currently covers efforts to upgrade client libraries to match
-this specification across three server-language
-platforms (Java/JRE, Golang, and C++11) and two mobile-language
-platforms (Java/Android, iOS).
+### Motivation
 
-This document also describes the appropriate level of testing and
-benchmarking to include with each client library.
+Our motivation for these changes is to improve the breadth of
+operating conditions for which LightStep's tracer library can provide
+efficient, reliable diagnostics reporting.  These implementations are
+already constrained on both sides, with the OpenTracing API
+specification and LightStep collector protocol defining the input and
+output semantics.
 
-### Preamble
-
-Our general motivation for these changes is to improve the
-breadth of operating conditions for which LightStep's tracer
-library can provide efficient, reliable diagnostics reporting.
-These implementations are already constrained on both sides, with
-the OpenTracing API specification and LightStep collector
-protocol defining input and output semantics.
-
-The primary task of this document, therefore, is to specify how
-client libraries should behave when resource constraints force
-the interruption of normal reporting.  We identify the most
+The primary task of this document is to specify how client libraries
+should use the available resources efficiently, particularly at the
+performance boundary, where we may be forced to drop data or increase
+resource usage, depending on service conditions. We identify the most
 important scenarios for consideration as follows:
 
-* When a new span is produced, while the buffer of pending data is full
-* When a non-retryable failure is received before the timeout
-* When a reporting timeout is received
+* New spans produced while the buffer of pending data is full
+* Non-retryable failures received before the timeout
+* Reporting timeout received
 * When user code creates excessively large spans or logs
 
-In these cases, this document will specify how clients should
-behave, in the interest of protecting LightStep's service from
+In these cases, this document will specify how clients should behave,
+in the mutual interest of valuing client resources, delivering
+instrumentation reliably, and protecting LightStep collectors from
 overload.
 
 ## Reporting protocol: user-visible fields
@@ -114,7 +105,6 @@ Key | Meaning
 ----|--------
 `lightstep.component_name`          | This maps to "service" in LightStep's UI, not to be confused with the OpenTracing ["component"](https://github.com/opentracing/specification/blob/master/semantic_conventions.md) semantic concept.
 `lightstep.hostname`                | LightStep clients set this to the operating system hostname.
-`lightstep.guid`                    | Equivalent to the reporter uuid, as a string.
 `lightstep.tracer_platform`         | A string describing the particular client library and transport implementation.
 `lightstep.tracer_platform_version` | A string describing the version of the client library.
 
@@ -139,13 +129,25 @@ the OpenTracing Span specification closely.  Users may apply tag
 values to spans downstream in their user-defined transport by
 adding them to `lightstep.Span.tags`.
 
-## User-defined transport
+Span tags override reporter tags, making it possible to create spans
+with a client on behalf of another process.  To set the reporter GUID:
 
-LightStep client libraries will be factored to include a
-user-defined transport mode in addition to a HTTP/2 option.  gRPC
-support will be removed in favor of HTTP/2 for third-generation
-clients as it adds unnecessary complexity and bulk to our tracer
-clients.
+Key | Meaning
+----|--------
+`lightstep.guid` | Equivalent to the reporter uuid, as a 64-bit unsigned decimal string.
+
+    TODO: Specify to represent 128-bit uuid in uuid.v4 format as a string.
+
+## Data Transport 
+
+LightStep client libraries will be factored to include a default
+http/2 implementation and a user-defined transport mode.  Although
+gRPC is eliminated from third generation client libraries, we use the
+same protocol definition and are committed to gRPC support on the
+server, meaning that user-defined transport implementations may use
+the gRPC [`lightstep.collector.CollectorService.Report`](https://github.com/lightstep/lightstep-tracer-common/blob/4c649d1a7ac52b9cafc7f8d21fe304f8fa4a4ae3/collector.proto#L105) endpoint.
+
+### User-defined transport
 
     TODO: Add detail section.  Note that the LightStep C++,
     Golang, and Java tracers are already factored for
@@ -167,4 +169,5 @@ unfortunately
 - *Value type*: describes the type of value passed to and from inject / extract
 - *Encoding type*: describes how the context will be encoded, whether as a single base64-encoded header or multiple text headers, for example.
 
-    TODO: Specify which combinations of the above must be supported for third-generation client libraries.
+    TODO: Specify which combinations of the above must be supported
+    for third-generation client libraries.
