@@ -15,10 +15,10 @@ toolchain-specific discussion.
 This specification defines the third generation of LightStep client
 libraries.  Whereas first generation client libraries offered Thrift
 transport, and second generation client libraries added gRPC support,
-third generation libraries remove both of these in favor of raw http/2
-transport using either protobuf or JSON encoding.  Third generation
-client libraries are expected to perform efficiently in both
-high-throughput and low-resource environments.  Third generation
+third generation libraries remove both of these methods in favor of
+plain http/2 transport using either protobuf or JSON encoding.  Third
+generation client libraries are expected to perform efficiently in
+both high-throughput and low-resource environments.  Third generation
 client libraries offer a user-defined transport option, allowing
 applications to customize transport and augment tracing data outside
 the process.
@@ -48,7 +48,7 @@ performance boundary, where we may be forced to drop data or increase
 resource usage, depending on service conditions. We identify the most
 important scenarios for consideration as follows:
 
-* New spans produced while the buffer of pending data is full
+* New spans produced while the buffer of pending data is nearly full
 * Non-retryable failures received before the timeout
 * Reporting timeout received
 * User code creates excessively large spans or logs
@@ -170,7 +170,7 @@ client libraries will be configured by a new set of parameters:
 
 Name               | Interpretation
 ------------------ | --------------
-`max_memory`       | Number of bytes of memory used (top)
+`max_memory`       | Number of bytes of memory buffered (top)
 `max_report_size`  | Limits the size of an outgoing report (bottom)
 `max_concurrency`  | Number of CPUs dedicated to sending reports (bottom)
 `max_flush_period` | Prevent sending more frequently (bottom)
@@ -198,17 +198,17 @@ the programmer.
 #### Note about protocol buffers
 
 Protocol buffer library support varies significantly by language, and
-where there are choices to be made, user opinions should be respected.
-When user-defined transport is selected, and where the language makes
-it possible to do so, the top-half of the client library will make
-efforts not to constraint the bottom half's choice of protocol
-library.
+in some languages there is more than one viable choice of library.
+There are also platforms where protocol libraries themselves are too
+expensive, due to code size.  The language itself also determines how
+reasonable and performant it is to abstract the choice away (i.e.,
+allow the bottom half to determine the protocol library) or sidestep
+(e.g., provide objects that naturally encode into protobuf-equivalent
+JSON.
 
-Taking this one step further, there are platforms where protocol
-libraries themselves are undesireable due to code size.  Where this is
-the case, by necessity, client libraries should permit user-defined
-transport without a protocol buffer library, where the assumption is a
-built-in JSON-encoder will be used instead.
+This will be resolved on a case-by-case basis.  The Obj-C/iOS must be
+structured so that user-defined transport is possible without a
+protobuf library, by customer request.
 
 ### User-defined transport
 
