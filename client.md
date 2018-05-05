@@ -181,12 +181,11 @@ to `max_report_size` of memory while sending reports.  The priorities
 listed above should be used to determine client behavior, without need
 for additional tuning parameters.
 
-We expect that on most language platforms, a single default transport
-implementation will be sufficient to provide an acceptable range of
-performance, from highly-constrained mobile devices to high-resource
-network proxies, subject to these priorities.  For example, a single
-Java transport implementation should perform well on both Android
-devices and on large servers, subject to different resource limits.
+#### Note about mobile platforms
+
+We expect that mobile platforms will require separate transport
+implementations compared with the same language on a non-mobile
+platform.
 
 #### Note about built-in safety
 
@@ -195,36 +194,45 @@ string formatting and JSON marshalling when producing reports, and are
 therefore only as safe as those facilities.  This risk is passed on to
 the programmer.
 
-#### Note about protocol buffers
+#### Note about protocol buffers vs. JSON
 
 Protocol buffer library support varies significantly by language, and
 in some languages there is more than one viable choice of library.
-There are also platforms where protocol libraries themselves are too
-expensive, due to code size.  The language itself also determines how
-reasonable and performant it is to abstract the choice away (i.e.,
-allow the bottom half to determine the protocol library) or sidestep
-(e.g., provide objects that naturally encode into protobuf-equivalent
-JSON.
-
-This will be resolved on a case-by-case basis.  The Obj-C/iOS must be
-structured so that user-defined transport is possible without a
-protobuf library, by customer request.
+The top half of the library should be not constrain the library used
+for encoding span data in the bottom half.
 
 ### User-defined transport
 
 The goal of user-defined transport is to insert an abstraction between
 the top-half and bottom-half of a client library, allowing the user to
-supply a custom bottom half.  This type partly exists in some of the
-libraries, for example a `Recorder` in
+supply a custom bottom half.
+
+This type exists in some of the libraries already, for example a
+`Recorder` in
 [C++](https://github.com/lightstep/lightstep-tracer-cpp/blob/4ea8bda9aed08ad45d6db2a030a1464e8d9b783f/src/recorder.h#L9)
 and a `SpanRecorder` in
 [Golang](https://github.com/lightstep/lightstep-tracer-go/blob/644c3d5ecbd0499c50a1329f89ba287921fc1144/options.go#L66),
 but the interface is not currently consistent.  Java has multiple transport
-options, but no facility for a user-provided transport, while
-Objective-C has only a single transport option.
+options, but no facility for a user-provided transport,
+while Objective-C has only a single transport option.
 
-    TODO: Add detail section on the desired, consistent interface
-    between the top half and bottom half of the client library.
+#### User-defined transport: `TracerImpl`
+
+The `TracerImpl` type contains the top-half of the client library,
+with access to the user-supplied tracer options (the reporter tags,
+access token) and the reporter identity (uuid).
+
+#### User-defined transport: `Recorder`
+
+The `Recorder` interface.
+
+    TODO: Supports `RecordSpan()` and `Flush()`.
+
+#### User-defined transport: `ReportBuilder`
+
+The `ReportBuilder` interface, similar to the existing [C++](https://github.com/lightstep/lightstep-tracer-cpp/blob/4ea8bda9aed08ad45d6db2a030a1464e8d9b783f/src/report_builder.h#L12) interface.
+
+    TODO: Supports `AddSpan()`, `SetPendingClientDroppedSpans()`, `Pending()`.
 
 ### Default transport implementation
 
