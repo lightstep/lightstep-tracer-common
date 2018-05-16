@@ -1,3 +1,20 @@
+# The LightStep collector protocol describes how data are
+# ingested by LightStep collectors (satellites).  This protocol
+# is intended for use by LightStep tracer libraries, not to be
+# used directly by the end user.  LightStep explicitly discourages
+# the use of this protocol without the use of a LightStep client
+# library.
+#
+# LightStep does permit direct interpretation of certain fields
+# in this protocol, when used in conjunction with a LightStep
+# tracer library configured for user-defined transport.  In this
+# case, to encourage deeper tracing integration at the
+# application level, LightStep permits users to inspect and
+# modify certain fields in the Report request.  These fields are
+# labeled USER-VISIBLE, below.
+#
+# Refer to the OpenTracing specification for the underlying data
+# model: https://github.com/opentracing/specification/blob/master/specification.md
 syntax = "proto3";
 
 package lightstep.collector;
@@ -10,9 +27,24 @@ option java_package = "com.lightstep.tracer.grpc";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
+// SpanContext represents an LightStep-compatible span context.
 message SpanContext {
-    uint64 trace_id = 1;
+    // LightStep tracers support 128-bit and 64-bit trace_ids.
+    // 128-bit trace_id support was added for alignment with the W3C
+    // trace context proposal and will be phased in on a per-library
+    // basis.  Users should be aware, when upgrading tracer versions
+    // to 128-bit trace_ids, of the potential for older client
+    // libraries to strip away 64-bits of context and render broken
+    // traces.  Upgrade downstream tracers first.
+    //
+    // See https://w3c.github.io/distributed-tracing/report-trace-context.html#trace-id
+    uint64 trace_id_low = 1;
+    uint64 trace_id_high = 4;
+
+    // See https://w3c.github.io/distributed-tracing/report-trace-context.html#span-id
     uint64 span_id = 2;
+
+    // See https://w3c.github.io/distributed-tracing/report-correlation-context.html
     map<string, string> baggage = 3;
 }
 

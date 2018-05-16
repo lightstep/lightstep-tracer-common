@@ -43,7 +43,7 @@ specification and LightStep collector protocol defining the input and
 output semantics.
 
 The primary task of this document is to specify how client libraries
-should use the available resources efficiently, particularly at the
+should use the available resources efficiently, particularly on the
 performance boundary, where we may be forced to drop data or increase
 resource usage, depending on service conditions. We identify the most
 important scenarios for consideration as follows:
