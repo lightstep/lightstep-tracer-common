@@ -1,20 +1,20 @@
-# The LightStep collector protocol describes how data are
-# ingested by LightStep collectors (satellites).  This protocol
-# is intended for use by LightStep tracer libraries, not to be
-# used directly by the end user.  LightStep explicitly discourages
-# the use of this protocol without the use of a LightStep client
-# library.
-#
-# LightStep does permit direct interpretation of certain fields
-# in this protocol, when used in conjunction with a LightStep
-# tracer library configured for user-defined transport.  In this
-# case, to encourage deeper tracing integration at the
-# application level, LightStep permits users to inspect and
-# modify certain fields in the Report request.  These fields are
-# labeled USER-VISIBLE, below.
-#
-# Refer to the OpenTracing specification for the underlying data
-# model: https://github.com/opentracing/specification/blob/master/specification.md
+// The LightStep collector protocol describes how data are
+// ingested by LightStep collectors (satellites).  This protocol
+// is intended for use by LightStep tracer libraries, not to be
+// used directly by the end user.  LightStep explicitly discourages
+// the use of this protocol without the use of a LightStep client
+// library.
+//
+// LightStep does permit direct interpretation of certain fields
+// in this protocol, when used in conjunction with a LightStep
+// tracer library configured for user-defined transport.  In this
+// case, to encourage deeper tracing integration at the
+// application level, LightStep permits users to inspect and
+// modify certain fields in the Report request.  These fields are
+// labeled USER-VISIBLE, below.
+//
+// Refer to the OpenTracing specification for the underlying data
+// model: https://github.com/opentracing/specification/blob/master/specification.md
 syntax = "proto3";
 
 package lightstep.collector;
@@ -27,7 +27,8 @@ option java_package = "com.lightstep.tracer.grpc";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
-// SpanContext represents an LightStep-compatible span context.
+// SpanContext represents an LightStep-compatible span context.  All
+// fields of SpanContext are USER-VISIBLE.
 message SpanContext {
     // LightStep tracers support 128-bit and 64-bit trace_ids.
     // 128-bit trace_id support was added for alignment with the W3C
@@ -48,27 +49,51 @@ message SpanContext {
     map<string, string> baggage = 3;
 }
 
-// Represent both tags and log fields.
+// KeyValue represent both span tags and log fields.  All fields of
+// KeyValue are USER-VISIBLE.
 message KeyValue {
+    // Key should be a non-empty string.  LightStep reserves the use of tag names
+    // that begin with '_' (underscore).
     string key = 1;
+
     oneof value {
-        // Holds arbitrary string data; well-formed JSON strings should go in
-        // json_value.
+        // Use string_value for arbitrary, non-JSON data.
         string string_value = 2;
+
+	// Note: in the LightStep product, signed integers are
+	// formatted as decimal values for search purposes.
         int64 int_value = 3;
         double double_value = 4;
         bool bool_value = 5;
-        // Must be a well-formed JSON value. Truncated JSON should go in
-        // string_value. Should not be used for tags.
+
+	// TODO: Add uint_value support for unsigned integers.
+
+        // Use json_value for logging JSON-encoded values.
+        // JSON-valued tags are not recognized by LightStep.
         string json_value = 6;
     }
 }
 
+// Log events should contain one or more structured values, and an
+// optional timestamp.  See:
+//
+// https://github.com/opentracing/specification/blob/master/specification.md#log-structured-data
+//
+// Conventional field names are listed here:
+//
+// https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
+//
+// All fields of Log are USER-VISIBLE.
 message Log {
     google.protobuf.Timestamp timestamp = 1;
     repeated KeyValue fields = 2;
 }
 
+// Reference encodes a span relationship with another span context.
+//
+// https://github.com/opentracing/specification/blob/master/specification.md#references-between-spans
+//
+// All fields of Reference are USER-VISIBLE.
 message Reference {
     enum Relationship {
         CHILD_OF = 0;
@@ -78,21 +103,64 @@ message Reference {
     SpanContext span_context = 2;
 }
 
+// Span contains fields corresponding to the OpenTracing data model. See: 
+//
+// https://github.com/opentracing/specification/blob/master/specification.md#span
+//
+// All fields of Span are USER-VISIBLE.
 message Span {
+    // The context associated with this span.
     SpanContext span_context = 1;
+
+    // The name of this span.
     string operation_name = 2;
+
+    // The relationship to other spans.
     repeated Reference references = 3;
+
+    // Start timestamp is the time when opentracing StartSpan API is
+    // called, unless an explicit start-time was provided.
     google.protobuf.Timestamp start_timestamp = 4;
+
+    // Duration is specified in microseconds.
     uint64 duration_micros = 5;
+
+    // Spans logically inherit tag values from the Reporter with which
+    // they are sent.  When the same tag appears on the reporter and the
+    // span, the span value wins.  When there are more than one value for
+    // a tag, the last value wins.
     repeated KeyValue tags = 6;
+
+    // Logs associated with this span.  Beware, LightStep clients and
+    // collectors are both typically configured with strict limits on
+    // logs volume.
     repeated Log logs = 7;
 }
 
+// Reporter identifies the client process sending a ReportRequest.  The
+// fields of reporter are logically applied to every span in the
+// ReportRequest.  LightStep uses certain standard tags to describe
+// the client proess:
+//
+//   lightstep.command_line		Command-line arguments.
+//   lightstep.component_name		Known as "service" in the product.
+//   lightstep.guid          		The client's UUID.
+//   lightstep.hostname			Describes the host.
+//   lightstep.tracer_platform		Describes the language and runtime (e.g., go).
+//   lightstep.tracer_platform_version	Version of the language and runtime (e.g., go1.10).
+//   lightstep.tracer_version           Describes the library version.
+//
+// All fields of Reporter are USER-VISIBLE.
 message Reporter {
-    uint64 reporter_id = 1;
+    // LightStep supports 64- or 128-bit reporter IDs.
+    uint64 reporter_id_low = 1;
+    uint64 reporter_id_high = 2;
+
     repeated KeyValue tags = 4;
 }
 
+// MetricsSample is used to convey one client-side metric (e.g., dropped spans)
+// to LightStep.  This type is not user-visible.
 message MetricsSample {
     string name = 1;
     oneof value {
@@ -101,6 +169,10 @@ message MetricsSample {
     }
 }
 
+// InternalMetrics is used to convey client-side metrics to LightStep.
+// This type is not user-visible.  Report builders for user-defined
+// transport provide slim APIs for supplying critical metrics to
+// LightStep.
 message InternalMetrics {
     google.protobuf.Timestamp start_timestamp = 1;
     uint64 duration_micros = 2;
@@ -109,28 +181,58 @@ message InternalMetrics {
     repeated MetricsSample gauges = 5;
 }
 
+// Auth contains the access token used to identify the LightStep
+// project.  The access token is USER-VISIBLE.
 message Auth {
     string access_token = 1;
 }
 
+// ReportRequest contains a payload of LightStep spans.
 message ReportRequest {
+    // Reporter describes the client process sending spans.  USER-VISIBLE.
     Reporter reporter = 1;
+
+    // Auth describes the LightStep project.  USER-VISIBLE.
     Auth auth = 2;
+
+    // Spans are the main payload.  USER-VISIBLE.
     repeated Span spans = 3;
+
+    // Timestamp offset is set when the client detects clock skew.
+    // This field is not user visible.
+    //
+    // TODO: This supports up to 30 minutes of clock skew.  Widen this to
+    // 64-bits.
     int32 timestamp_offset_micros = 5;
+
+    // Internal metrics are not user visible.
     InternalMetrics internal_metrics = 6;
 }
 
+// Command includes advice from the collector to the client. 
 message Command {
+    // Disable indicates that the collector would like the client to stop reporting.
+    // This is an emergency mechanism.
     bool disable = 1;
 }
 
+// ReportResponse is returned 
 message ReportResponse {
+    // Commands from the collector.  This field is USER-VISIBLE.
     repeated Command commands = 1;
+
+    // Timestamps used for clock synchronization.  These fields are not user visible.
     google.protobuf.Timestamp receive_timestamp = 2;
     google.protobuf.Timestamp transmit_timestamp = 3;
+
+    // Errors describes errors descovered while handling the report.
+    // Client libraries should report these events to the client.
+    // This field is USER-VISIBLE.
     repeated string errors = 4;
+
+    // Warnings is deprecated.
     repeated string warnings = 5;
+    // Infos is deprecated.
     repeated string infos = 6;
 }
 
