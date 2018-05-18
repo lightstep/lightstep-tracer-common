@@ -130,7 +130,7 @@ Key | Meaning
 ----|--------
 `lightstep.guid` | Equivalent to the reporter uuid.  If 64-bits, use a 16-byte hex representation.  If 128-bits, use a uuid.v4 string representation.
 
-## Data Transport 
+## Library Design
 
 LightStep client libraries will be factored to include a default
 http/2 implementation and a user-defined transport mode.  Although
@@ -139,10 +139,15 @@ same protocol definition and are committed to gRPC support on the
 server, meaning that user-defined transport implementations may use
 the gRPC [`lightstep.collector.CollectorService.Report`](https://github.com/lightstep/lightstep-tracer-common/blob/4c649d1a7ac52b9cafc7f8d21fe304f8fa4a4ae3/collector.proto#L105) endpoint.
 
-Client libraries may be viewed as an assembly of two parts, one an
-implementation of "pure" tracing, and the other a facility to send
-data to LightStep.  We will refer to these as the top half and the
-bottom half, respectively.
+Client libraries may be viewed as an assembly of several parts:
+one a pure tracing implementation, one for buffering and flushing
+spans, one for encoding span batches, and one for transporting
+span batches.  We label these parts:
+
+1. Pure tracing: this is an implementation of the OpenTracing Tracer interface, which handles translation from OpenTracing API calls into in-memory structures.  This component also implements OpenTracing Inject and Extract operations.
+1. Span recorder: this component receives finished spans from the pure tracing component.  Users may supplied their own span recorder for user-defined transport.  This module is expected not to block the caller. This module implements Flush support and is generally responsible for limiting resource usage.
+1. Report builder: this component contains logic to encode a LightStep report from a set of finished spans.
+1. Transporter: this component is responsible for sending a report batch to LightStep over HTTP.
 
 There are several competing interests present when designing client
 libraries, which we prioritize as follows:
@@ -183,10 +188,10 @@ platform.
 
 Client libraries are expected to use built-in facilities such as
 string formatting and JSON marshalling when producing reports, and are
-therefore only as safe as those facilities.  This risk is passed on to
-the programmer.
+therefore only as safe as those facilities.  This risk is passed on the
+programmer to.
 
-#### Note about protocol buffers vs. JSON
+#### Note protocol about buffers vs. JSON
 
 Protocol buffer library support varies significantly by language, and
 in some languages there is more than one viable choice of library.
