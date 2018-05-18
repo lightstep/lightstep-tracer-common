@@ -66,20 +66,12 @@ defines the data model used for ingesting spans that was adopted
 for second-generation tracers, introduced with the migration to
 gRPC.  There is a straightforward translation from OpenTracing
 concept to members of these fields with little room for
-interpretation.
+interpretation.  User-visible fields are called out in `collector.proto`.
 
 We document the interpretation of certain fields here to support
 deeper-integration between the application and the mode of
 user-defined transport.  To that end, we only document those
 fields necessary to support approved uses.  
-
-    TODO: Add documentation comments in the `collector.proto`
-    source about the fields that are valid for end-user
-    interpretation and modification during user-defined transport.
-
-    TODO: Add documentation comments in the `collector.proto`
-    source defining how those fields should be used for the
-    implementor of a LightStep client library.
 
 ### Report structure
 
@@ -105,15 +97,16 @@ Key | Meaning
 ----|--------
 `lightstep.component_name`          | This maps to "service" in LightStep's UI, not to be confused with the OpenTracing ["component"](https://github.com/opentracing/specification/blob/master/semantic_conventions.md) semantic concept.
 `lightstep.hostname`                | LightStep clients set this to the operating system hostname.
-`lightstep.tracer_platform`         | A string describing the particular client library and transport implementation.
-`lightstep.tracer_platform_version` | A string describing the version of the client library.
+`lightstep.tracer_platform`         | A string describing the particular language and runtime (e.g., "iOS")
+`lightstep.tracer_platform_version` | A string describing the version of the client library (e.g., "iOS 11.4")
+`lightstep.command_line`            | Formatted command-line arguments.
+`lightstep.tracer_version`          | Version of the tracer library itself.
+
 
 Reporter fields are effectively applied to each of the spans
 contained within the report.  Spans may override each of the
 above values by setting the same tag in their own
 `lightstep.Span.tags` set.
-
-    TODO: Widen the LightStep reporter guid field to 128 bits.
 
 #### Auth
 
@@ -130,13 +123,12 @@ values to spans downstream in their user-defined transport by
 adding them to `lightstep.Span.tags`.
 
 Span tags override reporter tags, making it possible to create spans
-with a client on behalf of another process.  To set the reporter GUID:
+with a client on behalf of another process.  To set the reporter GUID
+for a span, use:
 
 Key | Meaning
 ----|--------
-`lightstep.guid` | Equivalent to the reporter uuid, as a 64-bit unsigned decimal string.
-
-    TODO: Specify to represent 128-bit uuid in uuid.v4 format as a string.
+`lightstep.guid` | Equivalent to the reporter uuid.  If 64-bits, use a 16-byte hex representation.  If 128-bits, use a uuid.v4 string representation.
 
 ## Data Transport 
 
