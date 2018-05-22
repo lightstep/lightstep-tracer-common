@@ -117,10 +117,11 @@ this field downstream in their user-defined transport.
 
 #### Spans
 
-The main report payload consists of a list of spans.  Span match
-the OpenTracing Span specification closely.  Users may apply tag
-values to spans downstream in their user-defined transport by
-adding them to `lightstep.Span.tags`.
+The main report payload consists of a list of spans.
+`lightstep.Span` matches the OpenTracing `Span` specification
+closely.  Users may apply tag values to spans downstream in their
+user-defined transport layer, by adding them to
+`lightstep.Span.tags`.
 
 Span tags override reporter tags, making it possible to create spans
 with a client on behalf of another process.  To set the reporter GUID
@@ -128,7 +129,7 @@ for a span, use:
 
 Key | Meaning
 ----|--------
-`lightstep.guid` | Equivalent to the reporter uuid.  If 64-bits, use a 16-byte hex representation.  If 128-bits, use a uuid.v4 string representation.
+`lightstep.guid` | Equivalent to the reporter uuid.  If 64-bits, use a 16-byte hex string representation.  If 128-bits, use a uuid.v4 string representation.
 
 ## Library Design
 
@@ -146,7 +147,8 @@ span batches.  We label these parts:
 
 1. Pure tracing: this is an implementation of the OpenTracing Tracer interface, which handles translation from OpenTracing API calls into in-memory structures.  This component also implements OpenTracing Inject and Extract operations.
 1. Span recorder: this component receives finished spans from the pure tracing component.  Users may supplied their own span recorder for user-defined transport.  This module is expected not to block the caller. This module implements Flush support and is generally responsible for limiting resource usage.
-1. Report builder: this component contains logic to encode a LightStep report from a set of finished spans.
+1. Report builder: this component contains logic to encode a LightStep report from a set of finished 1.
+spans.
 1. Transporter: this component is responsible for sending a report batch to LightStep over HTTP.
 
 There are several competing interests present when designing client
@@ -165,18 +167,20 @@ maximum of one simultaneous Report being sent at a time, making these
 parameters easy to interpret but difficult to tune.  Third generation
 client libraries will be configured by a new set of parameters:
 
-Name               | Interpretation
+Name               | Interpretation (implemented by)
 ------------------ | --------------
-`max_memory`       | Number of bytes of memory buffered (top)
-`max_report_size`  | Limits the size of an outgoing report (bottom)
-`max_concurrency`  | Number of CPUs dedicated to sending reports (bottom)
-`max_flush_period` | Prevent sending more frequently (bottom)
+`max_memory`       | Number of bytes of memory buffered (Span recorder)
+`max_report_size`  | Limits the size of an outgoing report (Report builder)
+`max_concurrency`  | Number of CPUs dedicated to sending reports (Transporter)
+`max_flush_period` | Prevent sending more frequently (Span recorder)
 
-The `max_memory` parameter applies only to the top half of the
-library.  Users should assume that each concurrent sender may use up
-to `max_report_size` of memory while sending reports.  The priorities
-listed above should be used to determine client behavior, without need
-for additional tuning parameters.
+None of these settings apply when user-defined transport is selected.
+
+Clients using built-in transport may presume that the library
+consumes up to `max_memory` bytes of buffered spans plus up to
+`max_report_size` of memory per concurrent sender.  The
+priorities listed above should be used to determine client
+behavior, without need for additional tuning parameters.
 
 #### Note about mobile platforms
 
@@ -193,27 +197,31 @@ programmer to.
 
 #### Note protocol about buffers vs. JSON
 
-Protocol buffer library support varies significantly by language, and
-in some languages there is more than one viable choice of library.
-The top half of the library should be not constrain the library used
-for encoding span data in the bottom half.
+Protocol buffer library support varies significantly by language,
+and in some languages there is more than one viable choice of
+library.  The pure tracing implementation should be not constrain
+the library used for encoding span data in the report builder and
+transporter.
 
 ### User-defined transport
 
-The goal of user-defined transport is to insert an abstraction between
-the top-half and bottom-half of a client library, allowing the user to
-supply a custom bottom half.
+The goal of user-defined transport is to provide alternative
+implementations for the Span Recorder and Transporter components,
+while still relying on the pure tracing component and a report
+builder.
 
-This type exists in some of the libraries already, for example a
-`Recorder` in
+This factorization already exists in some of the libraries, for
+example a `Recorder` in
 [C++](https://github.com/lightstep/lightstep-tracer-cpp/blob/4ea8bda9aed08ad45d6db2a030a1464e8d9b783f/src/recorder.h#L9)
 and a `SpanRecorder` in
 [Golang](https://github.com/lightstep/lightstep-tracer-go/blob/644c3d5ecbd0499c50a1329f89ba287921fc1144/options.go#L66),
-but the interface is not currently consistent.  Java has multiple transport
-options, but no facility for a user-provided transport,
+but the interface is not currently consistent.  Java has multiple
+transport options, but no facility for a user-provided transport,
 while Objective-C has only a single transport option.
 
 #### User-defined transport: `TracerImpl`
+
+    TODO: HERE.
 
 The `TracerImpl` type contains the top-half of the client library,
 with access to the user-supplied tracer options (the reporter tags,
