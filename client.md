@@ -203,12 +203,12 @@ library.  The pure tracing implementation should be not constrain
 the library used for encoding span data in the report builder and
 transporter.
 
-### User-defined transport
+### Factorization
 
 The goal of user-defined transport is to provide alternative
 implementations for the Span Recorder and Transporter components,
-while still relying on the pure tracing component and a report
-builder.
+while still relying on the Pure Tracing component and a Report
+Builder.
 
 This factorization already exists in some of the libraries, for
 example a `Recorder` in
@@ -219,7 +219,25 @@ but the interface is not currently consistent.  Java has multiple
 transport options, but no facility for a user-provided transport,
 while Objective-C has only a single transport option.
 
-#### User-defined transport: `TracerImpl`
+#### Pure tracing component
+
+The `AbstractTracer` type provides an implementation of
+`opentracing.Tracer`.  Concrete implementations will:
+
+- Determine the concrete type of AbstractSpan used
+- Provides the opentracing Inject and Abstract APIs
+- Provide a system logger implementation
+- Provide a clock implementation
+- Provide a Span Recorder
+
+The `AbstractSpan` type provides an implementation of
+`opentracing.Span`.  Concrete implementations will:
+
+- Carry a reference to an `AbstractTracer` implementation
+- Maintain abstract data-transfer objects corresponding to start time, span context, 
+
+
+
 
     TODO: HERE.
 
