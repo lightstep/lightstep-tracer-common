@@ -145,9 +145,9 @@ one a pure tracing implementation, one for buffering and flushing
 spans, one for encoding span batches, and one for transporting
 span batches.  We label these parts:
 
-1. Pure tracing: this is an implementation of the OpenTracing Tracer interface, which handles translation from OpenTracing API calls into in-memory structures.  This component also implements OpenTracing Inject and Extract operations.
-1. Span recorder: this component receives finished spans from the pure tracing component.  Users may supplied their own span recorder for user-defined transport.  This module is expected not to block the caller. This module implements Flush support and is generally responsible for limiting resource usage.
-1. Report builder: this component contains logic to encode a LightStep report from a set of finished 1.
+1. Pure Tracing: this is an implementation of the OpenTracing Tracer interface, which handles translation from OpenTracing API calls into in-memory structures.  This component also implements OpenTracing Inject and Extract operations.
+1. Span Recorder: this component receives finished spans from the pure tracing component.  Users may supplied their own span recorder for user-defined transport.  This module is expected not to block the caller. This module implements Flush support and is generally responsible for limiting resource usage.
+1. Report Builder: this component contains logic to encode a LightStep report from a set of finished 1.
 spans.
 1. Transporter: this component is responsible for sending a report batch to LightStep over HTTP.
 
@@ -219,25 +219,27 @@ but the interface is not currently consistent.  Java has multiple
 transport options, but no facility for a user-provided transport,
 while Objective-C has only a single transport option.
 
-#### Pure tracing component
+#### Pure Tracing component
 
-The `AbstractTracer` type provides an implementation of
+The `AbstractTracer` type provides the basic implementation of
 `opentracing.Tracer`.  Concrete implementations will:
 
-- Determine the concrete type of AbstractSpan used
+- Provides external system dependencies (e.g., scope manager, logger, clock, ID generator)
+- Factory for concrete Span (or SpanBuilder) and SpanContext objects
+- Factory for concrete data-transfer objects (timestamps, logs, span references, key values) of in-flight Span state
 - Provides the opentracing Inject and Abstract APIs
-- Provide a system logger implementation
-- Provide a clock implementation
-- Provide a Span Recorder
 
-The `AbstractSpan` type provides an implementation of
+The `AbstractSpan` type provides the basic implementation of
 `opentracing.Span`.  Concrete implementations will:
 
-- Carry a reference to an `AbstractTracer` implementation
-- Maintain abstract data-transfer objects corresponding to start time, span context, 
+- Contains a reference to an `AbstractTracer` implementation
+- Contains a reference to its own span recorder
+- Contains the underlying Span data-transfer object
 
+The `SpanContext` type provides a LightStep implementation of
+`opentracing.SpanContext`.
 
-
+#### Span Recorder component
 
     TODO: HERE.
 
