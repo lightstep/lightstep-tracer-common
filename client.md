@@ -1,7 +1,7 @@
 # LightStep Tracer Client v3 Specification
 
 LightStep Engineering
-May 3, 2018
+May 25, 2018
 
 ## Overview
 
