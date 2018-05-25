@@ -315,19 +315,59 @@ because we have an overall limit on data transmission.
 
 ## Span context carrier
 
-LightStep supports several ways to transport ("carry") span context
-between applications.  There are several different terms used to
-describe this support in OpenTracing, which has led to a confusing,
-incomplete matrix of carrier support across client libraries.
+LightStep supports two existing encodings when
+transporting ("carrying") span context between applications.
+Carrier logic is effectively independent from the design and
+implementation of the tracer and the component factorization
+discussed here.  First, we document the two existing form, both
+of which are slated for deprecation once the W3C trace context
+proposal is ratified.
 
-- *Carrier format*: describes the logical type of the data, interpreted by the vendor
-- *Value type*: describes the type of value passed to and from inject / extract
-- *Encoding type*: describes how the context will be encoded, whether as a single base64-encoded header or multiple text headers, for example.
+### OT community-led "Basic Tracer" encoding
 
-    TODO: Clarify the current state of the world.
+The basic tracer encoding specifies the encoding of `span_id`,
+`trace_id`, an `is_sampled` bit, and the OT baggage in the form
+of HTTP headers named `ot-tracer-spanid`, `ot-tracer-traceid`,
+and `ot-baggage-<key>`.
 
-    TODO: Specify which combinations of the above must be supported
-    for third-generation client libraries.
+The benefit of this encoding strategy is that it uses a simple
+encoding, meaning less overhead in translation, and it uses
+built-in features of the transport protocol so likely requires
+less client-side code.  Although easier to produce, contexts
+carried in this way can be more expensive to process by the
+recipient, which may be a concern for high-throughput
+applications (e.g., Envoy).
 
-    TODO: Widen the SpanContext trace_id to 128 bits to match the W3C
-    trace propagation spec.
+### Customer-led "Single Header" encoding
+
+LightStep introduced a second encoding for carried contexts that
+uses a single HTTP header containing a base64-encoded,
+protobuf-encoded context object with the same fields as the Basic
+Tracer encoding.
+
+### Commentary
+
+One advantage of the Basic Tracer encoding is that it encodes
+identifiers as variable-length decimal values.  We can easily
+widen the span_id and trace_id carried through this mechanism.
+On the other hand, the protobuf form of this protocol identifies
+the span_id and trace_id as 64-bit values, so it cannot be easily
+extended to 128-bit values.
+
+Customers have requested support for 128-bit values, which leads
+us to prefer the multi-header Basic Tracer encoding at the
+present moment in time.
+
+The forthcoming W3C trace context proposal addresses this matter,
+and when it is ready, LightStep will adopt it and deprecate both
+of its existing carrier encodings.
+
+## Widening Reporter and Trace GUIDs
+
+LightStep will widen the reporter and trace GUIDs in its carried
+contexts and spans to 128 bits, by popular request and for
+compatibility with the W3C proposal, which specifies 128-bits for
+trace_id.  The single-header carrier will not be extended with
+this support, so v3 client libraries should prefer the
+single-header context carrier format until the W3C proposal is
+ratified.
