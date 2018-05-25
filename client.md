@@ -126,7 +126,7 @@ user-defined transport layer, by adding them to
 Span tags override reporter tags, making it possible to create spans
 with a client on behalf of another process.  To set the reporter GUID
 for a span, use:
-
+ 
 Key | Meaning
 ----|--------
 `lightstep.guid` | Equivalent to the reporter uuid.  If 64-bits, use a 16-byte hex string representation.  If 128-bits, use a uuid.v4 string representation.
@@ -156,7 +156,7 @@ libraries, which we prioritize as follows:
 
 1. Do not harm the application
 1. Do not harm the LightStep service
-1. Send as much data as possible
+1. Do not drop data
 1. Do not waste resources
 
 First and second generation LightStep client libraries offered several
@@ -167,14 +167,15 @@ maximum of one simultaneous Report being sent at a time, making these
 parameters easy to interpret but difficult to tune.  Third generation
 client libraries will be configured by a new set of parameters:
 
-Name               | Interpretation (implemented by)
------------------- | --------------
-`max_memory`       | Number of bytes of memory buffered (Span recorder)
-`max_report_size`  | Limits the size of an outgoing report (Report builder)
-`max_concurrency`  | Number of CPUs dedicated to sending reports (Transporter)
-`max_flush_period` | Prevent sending more frequently (Span recorder)
+Name                   | Interpretation (implemented by)
+---------------------- | --------------
+`max_memory`           | Number of bytes of memory buffered (Span Recorder)
+`max_report_size`      | Limits the size of an outgoing report (Report Builder and/or Span Recorder)
+`max_concurrency`      | Number of CPUs dedicated to sending reports (Transporter)
+`max_bytes_per_second` | Prevent sending more frequently (Span Recorder)
 
-None of these settings apply when user-defined transport is selected.
+When user-defined transport is selected, only the `max_report_size` setting
+is meaningful.
 
 Clients using built-in transport may presume that the library
 consumes up to `max_memory` bytes of buffered spans plus up to
@@ -193,15 +194,19 @@ platform.
 Client libraries are expected to use built-in facilities such as
 string formatting and JSON marshalling when producing reports, and are
 therefore only as safe as those facilities.  This risk is passed on the
-programmer to.
+programmer.
 
 #### Note protocol about buffers vs. JSON
 
 Protocol buffer library support varies significantly by language,
 and in some languages there is more than one viable choice of
-library.  The pure tracing implementation should be not constrain
-the library used for encoding span data in the report builder and
-transporter.
+library.  The pure tracing implementation should be architected
+so as not to constrain the choice of library used for encoding
+span data in the report builder and transporter, while also not
+constraining performance.  This implies that the Pure Tracing
+component use generic programming techniques, to avoid needless
+copying of data into the Report Builder; it also implies that we
+expect the Report Builder and Transporter to be tightly coupled.
 
 ### Factorization
 
@@ -219,50 +224,94 @@ but the interface is not currently consistent.  Java has multiple
 transport options, but no facility for a user-provided transport,
 while Objective-C has only a single transport option.
 
+#### Definitions
+
+There are two kinds of object being described here.
+
+- A "concrete interface object" is the implementation of an OpenTracing interface
+- A "data-transport object" is a structured object that can be encoded for LightStep
+
+A tracing library provides concrete interface objects to the
+user, while employing data-trasport objects to manage storing and
+encoding internal state.
+
 #### Pure Tracing component
 
 The `AbstractTracer` type provides the basic implementation of
 `opentracing.Tracer`.  Concrete implementations will:
 
 - Provides external system dependencies (e.g., scope manager, logger, clock, ID generator)
-- Factory for concrete Span (or SpanBuilder) and SpanContext objects
+- Factory for concrete Span (or SpanBuilder) and SpanContext interface objects
 - Factory for concrete data-transfer objects (timestamps, logs, span references, key values) of in-flight Span state
-- Provides the opentracing Inject and Abstract APIs
+- Provides the opentracing Inject and Abstract APIs.
 
 The `AbstractSpan` type provides the basic implementation of
 `opentracing.Span`.  Concrete implementations will:
 
 - Contains a reference to an `AbstractTracer` implementation
 - Contains a reference to its own span recorder
-- Contains the underlying Span data-transfer object
+- Contains the underlying Span data-transfer object.
 
 The `SpanContext` type provides a LightStep implementation of
 `opentracing.SpanContext`.
 
 #### Span Recorder component
 
-    TODO: HERE.
+The Span Recorder component is responsible for the logic of
+buffering and flushing data, deciding when to drop, whether to
+increase or decrease concurrency and report size, and when to
+back-off if the service is not responding.  It is cheifly
+constrained by the limits on memory, CPU, and network usage.
 
-The `TracerImpl` type contains the top-half of the client library,
-with access to the user-supplied tracer options (the reporter tags,
-access token) and the reporter identity (uuid).
+TODO: Because the Span Recorder component is not required for
+deploying a user-defined transport option, detailed deisgn of the
+Span Recorder component will be future LightStep engineering
+work.  LightStep plans to begin constructing a v3 client for
+Golang in June 2018, to flush out this design.
 
-#### User-defined transport: `Recorder`
+##### Technical note on limiting report size
 
-The `Recorder` interface.
+LightStep places a limit on overall report size for pragmatic
+reasons, because it assists with load balancing and because we
+use gRPC downstream, which imposes a hard limit.  Limiting report
+size is not easy to do cheaply, however, because it takes
+significant CPU to precisely calculate the encoded size of a
+message.
 
-    TODO: Supports `RecordSpan()` and `Flush()`.
+We have considered several approaches to deal with this:
 
-#### User-defined transport: `ReportBuilder`
+- A precise algorithm: as reports are built incrementally, re-compute the total size by asking the object its encoded size when each new span is added, stop and remove the last span when it exceeds the limit.  This requires O(N^2) calls to compute the encoded size and O(N) calls to encode a span.
+- An approximate algorithm: as reports are built incrementally, compute the estimated size of each span and extrapolate the estimated report size using assumptions about protobuf overhead.  This requires O(N) calls to copmute the encoded size.
+- An efficient algorithm: encode each span individually into a byte array, yielding both the encoding and its size.  Assemble protobuf reports by concatenating byte arrays, which works because `lighstep.Report` contains a repeated `lightstep.Span` field at the outermost level.  There is nearly zero overhead to this approach, though it couples the Span Recorder to the Report Builder to the Transporter in a way that may not be a useful factorization for user-defined transport to succeed.
 
-The `ReportBuilder` interface, similar to the existing [C++](https://github.com/lightstep/lightstep-tracer-cpp/blob/4ea8bda9aed08ad45d6db2a030a1464e8d9b783f/src/report_builder.h#L12) interface.
+LightStep will consider using either the approximate or the
+efficient algorithm for its Span Recorder components, depending on
+our experience at building a v3 Golang client library in June 2018.
 
-    TODO: Supports `AddSpan()`, `SetPendingClientDroppedSpans()`, `Pending()`.
+#### Report Builder component
 
-### Default transport implementation
+The Report Builder component encapsulates the encoding logic that
+turns concrete interface objects into serialized bytes for
+sending.  The Report Builder component typically determines the
+concrete types of the data-transport objects that are used.  For
+example, if the underlying transport uses protobuf, the Report
+Builder is a thin wrapper around a protobuf object.
 
-    TODO: Document and give pseudo-code for managing the tension
-    between report size, concurrency level, timeout, and backoff.
+When user-defined transport is selected, user code becomes
+involved in transport and, therefore, there are certain auxiliary
+APIs made available for meta-reporting back to LightStep.  The
+Report Builder includes an API for setting a pending count of
+dropped spans to be sent in the next report.
+
+#### Transporter component
+
+The transporter component handles sending data to LightStep over
+an HTTP connection.  A Transporter is only selected in
+conjunction with a Span Recorder, when the user has not selected
+user-defined transport, so we treat the Transporter as
+essentially a "dumb" component.  It should not retry, for
+example, that logic must be performed in the Span Recorder, e.g.,
+because we have an overall limit on data transmission.
 
 ## Span context carrier
 
