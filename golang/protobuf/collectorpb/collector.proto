@@ -86,7 +86,7 @@ message ReportRequest {
     Reporter reporter = 1;
     Auth auth = 2;
     repeated Span spans = 3;
-    int32 timestamp_offset_micros = 5;
+    int64 timestamp_offset_micros = 5;
     InternalMetrics internal_metrics = 6;
 }
 
