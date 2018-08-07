@@ -15,12 +15,10 @@ jobs:
       - run:
           name: "dep ensure"
           command: |
-            export TERM=dumb
-
             dep ensure
 
             if ! git diff --quiet HEAD; then
-              git diff HEAD
+              git --no-pager diff HEAD
               echo "ensure failed"
               exit 1
             fi
