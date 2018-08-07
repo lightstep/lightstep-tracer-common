@@ -12,7 +12,18 @@ jobs:
             echo 'export GOPATH="$HOME/go"' >> $BASH_ENV
             source $BASH_ENV
       - checkout
-      - run: make test
+      - run:
+          name: "dep ensure"
+          command: |
+            dep ensure
+
+            if ! git diff --quiet HEAD; then
+              git diff HEAD
+              echo "ensure failed"
+              exit 1
+            fi
+
+      - run: go test -v ./golang
 
 workflows:
   version: 2
