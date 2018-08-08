@@ -19,7 +19,7 @@ jobs:
 
             if ! git diff --quiet HEAD; then
               git --no-pager diff HEAD
-              echo "ensure failed"
+              echo "dep ensure failed"
               exit 1
             fi
 
