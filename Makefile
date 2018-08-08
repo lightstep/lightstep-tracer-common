@@ -34,13 +34,13 @@ FAKES = \
 
 build: test
 
-proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES) 
+proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
-	$(GOPATH)/bin/dep ensure && $(GOPATH)/bin/dep prune
+	dep ensure
 	go test -v ./golang
 
-clean: 
+clean:
 	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
 
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
