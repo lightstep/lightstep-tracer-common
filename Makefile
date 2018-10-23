@@ -37,6 +37,8 @@ build: test
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
+	git submodule sync
+	git submodule update --init
 	dep ensure
 	go test -v ./golang
 

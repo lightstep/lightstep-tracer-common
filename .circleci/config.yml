@@ -12,6 +12,8 @@ jobs:
             echo 'export GOPATH="$HOME/go"' >> $BASH_ENV
             source $BASH_ENV
       - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
       - run:
           name: "dep ensure"
           command: |
