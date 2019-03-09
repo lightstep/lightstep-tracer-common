@@ -36,29 +36,39 @@ build: test
 
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
+dep:
+	dep ensure -v
+
 test: $(TEST_SOURCES)
-	dep ensure
+	@mkdir -p $(TMPNAME)
 	go test -v ./golang
 
 clean:
 	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
+	rm -rf $(TMPNAME)
 
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
 
 $(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto
+	@mkdir -p $(TMPNAME)
 	$(call gen_protoc_link,$<,$@,$(GOGO))
 
 $(PBUF_LINKS): $(GOLANG)-$(PBUF)-%-link: %.proto
+	@mkdir -p $(TMPNAME)
 	$(call gen_protoc_link,$<,$@,$(PBUF))
 
 $(GOGO_GENTGTS): $(GOLANG)-$(GOGO)-%: %.proto proto-links
+	@mkdir -p $(TMPNAME)
 	$(call gen_gogo_target,$<)
 
 $(PBUF_GENTGTS): $(GOLANG)-$(PBUF)-%: %.proto proto-links
+	@mkdir -p $(TMPNAME)
 	$(call gen_protobuf_target,$<)
 
 golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/gogo/collectorpb/collector.pb.go
+	@mkdir -p $(TMPNAME)
 	$(call generate_fake,$@,$<,CollectorServiceClient)
 
 golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/protobuf/collectorpb/collector.pb.go
+	@mkdir -p $(TMPNAME)
 	$(call generate_fake,$@,$<,CollectorServiceClient)
