@@ -36,10 +36,8 @@ build: test
 
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
-dep:
-	dep ensure -v
-
 test: $(TEST_SOURCES)
+	dep ensure -v
 	@mkdir -p $(TMPNAME)
 	go test -v ./golang
 
