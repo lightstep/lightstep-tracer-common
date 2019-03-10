@@ -37,28 +37,33 @@ build: test
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
-	dep ensure
+	dep ensure -v
+	@mkdir -p $(TMPNAME)
 	go test -v ./golang
 
 clean:
 	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
+	rm -rf $(TMPNAME)
 
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
 
-$(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto
+$(TMPNAME): 
+	@mkdir -p $(TMPNAME)
+
+$(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto $(TMPNAME)
 	$(call gen_protoc_link,$<,$@,$(GOGO))
 
-$(PBUF_LINKS): $(GOLANG)-$(PBUF)-%-link: %.proto
+$(PBUF_LINKS): $(GOLANG)-$(PBUF)-%-link: %.proto $(TMPNAME)
 	$(call gen_protoc_link,$<,$@,$(PBUF))
 
-$(GOGO_GENTGTS): $(GOLANG)-$(GOGO)-%: %.proto proto-links
+$(GOGO_GENTGTS): $(GOLANG)-$(GOGO)-%: %.proto proto-links $(TMPNAME)
 	$(call gen_gogo_target,$<)
 
-$(PBUF_GENTGTS): $(GOLANG)-$(PBUF)-%: %.proto proto-links
+$(PBUF_GENTGTS): $(GOLANG)-$(PBUF)-%: %.proto proto-links $(TMPNAME)
 	$(call gen_protobuf_target,$<)
 
-golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/gogo/collectorpb/collector.pb.go
+golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/gogo/collectorpb/collector.pb.go $(TMPNAME)
 	$(call generate_fake,$@,$<,CollectorServiceClient)
 
-golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/protobuf/collectorpb/collector.pb.go
+golang/protobuf/collectorpb/collectorpbfakes/fake_collector_service_client.go: golang/protobuf/collectorpb/collector.pb.go $(TMPNAME)
 	$(call generate_fake,$@,$<,CollectorServiceClient)
