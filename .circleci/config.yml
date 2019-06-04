@@ -9,7 +9,8 @@ jobs:
           GOPROXY: https://proxy.golang.org
     steps:
       - checkout
-      - run: go test -v ./golang
+      - run: (cd golang/gogo && go test -v ./...)
+      - run: (cd golang/protobuf && go test -v ./...)
 
 workflows:
   version: 2

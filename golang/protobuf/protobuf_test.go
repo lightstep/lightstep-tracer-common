@@ -1,4 +1,4 @@
-package golang
+package lightstep_tracer_common_test
 
 import (
 	"reflect"
