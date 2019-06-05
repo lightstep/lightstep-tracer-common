@@ -12,15 +12,11 @@
 # include genproto.mk
 
 GOLANG = golang
-PBUF   = protobuf
-GOGO   = gogo
-
-# Use the final GOPATH element, since that's where circleci puts the code (lame!)
-ROOT = $(shell echo ${GOPATH} | tr : \\n | tail -1)
-
-PWD     = $(shell pwd)
+PBUF = protobuf
+GOGO = gogo
+ROOT = $(PWD)/../../..
 TMPNAME = tmpgen
-TMPDIR  = $(PWD)/$(TMPNAME)
+TMPDIR = $(PWD)/$(TMPNAME)
 
 # List of standard protoc options
 PROTOC_OPTS = plugins=grpc
@@ -61,14 +57,14 @@ endef
 # $(4) = protoc-output spec
 #
 # Note: the --proto_path include "." below references the
-# docker image's $(ROOT)/src.  /input is mapped to the
+# docker image's $(ROOT)/src. /input is mapped to the
 # host's $(ROOT)/src.
 define gen_protoc_target
   @echo compiling $(1) [$(3)]
   @mkdir -p $(TMPDIR)
   @sed -E 's@import "github.com/lightstep/([^/]+)/(.*).proto"@import "github.com/lightstep/\1/$(GOLANG)/$(3)/\2pb/\2.proto"@g' < $(1) > $(TMPDIR)/$(1)
   @docker run --rm \
-    -v $(ROOT)/src:/input:ro \
+    -v $(ROOT):/input:ro \
     -v $(TMPDIR):/output \
     lightstep/gogoprotoc:latest \
     protoc \
@@ -92,7 +88,7 @@ endef
 # $(3) class name
 define generate_fake
   @docker run --rm \
-	-v $(ROOT):/usergo \
+	-v $(ROOT):/usergo/src \
 	lightstep/gobuild:latest \
 	/bin/bash -c "cd /usergo/src/$(PKG_PREFIX) && counterfeiter -o $(1) $(2) $(3)"
 endef

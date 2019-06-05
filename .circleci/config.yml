@@ -2,28 +2,15 @@ version: 2
 
 jobs:
   test:
-    working_directory: ~/go/src/github.com/lightstep/lightstep-tracer-common
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: 'on'
+          GOPROXY: https://proxy.golang.org
     steps:
-      - run:
-          name: "configure environment"
-          command: |
-            echo 'export GOPATH="$HOME/go"' >> $BASH_ENV
-            source $BASH_ENV
       - checkout
-      - run:
-          name: "dep ensure"
-          command: |
-            dep ensure
-
-            if ! git diff --quiet HEAD; then
-              git --no-pager diff HEAD
-              echo "dep ensure failed"
-              exit 1
-            fi
-
-      - run: go test -v ./golang
+      - run: (cd golang/gogo && go test -v ./...)
+      - run: (cd golang/protobuf && go test -v ./...)
 
 workflows:
   version: 2

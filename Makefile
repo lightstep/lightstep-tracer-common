@@ -1,3 +1,6 @@
+# tools
+GO = GO111MODULE=on GOPROXY=https://proxy.golang.org go
+
 default: build
 
 genproto.mk:
@@ -22,8 +25,8 @@ TEST_SOURCES = \
 GOGO_GENTGTS = $(call protos_to_gogo_targets,$(PROTO_SOURCES))
 PBUF_GENTGTS = $(call protos_to_protobuf_targets,$(PROTO_SOURCES))
 
-GOGO_LINKS  = $(call protoc_targets_to_link_targets,$(GOGO_GENTGTS))
-PBUF_LINKS  = $(call protoc_targets_to_link_targets,$(PBUF_GENTGTS))
+GOGO_LINKS = $(call protoc_targets_to_link_targets,$(GOGO_GENTGTS))
+PBUF_LINKS = $(call protoc_targets_to_link_targets,$(PBUF_GENTGTS))
 
 FAKES = \
 	golang/gogo/collectorpb/collectorpbfakes/fake_collector_service_client.go \
@@ -37,13 +40,13 @@ build: test
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
-	dep ensure -v
 	@mkdir -p $(TMPNAME)
-	go test -v ./golang
+	${GO} test -v ./golang
 
 clean:
-	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
+	${GO} clean ./...
 	rm -rf $(TMPNAME)
+	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
 
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
 
