@@ -19,8 +19,8 @@ PROTO_SOURCES = \
 	lightstep.proto
 
 TEST_SOURCES = \
-	$(GOLANG)/gogo_test.go \
-	$(GOLANG)/protobuf_test.go
+	$(GOLANG)/gogo/gogo_test.go \
+	$(GOLANG)/protobuf/protobuf_test.go
 
 GOGO_GENTGTS = $(call protos_to_gogo_targets,$(PROTO_SOURCES))
 PBUF_GENTGTS = $(call protos_to_protobuf_targets,$(PROTO_SOURCES))
@@ -40,8 +40,9 @@ build: test
 proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
-	@mkdir -p $(TMPNAME)
-	${GO} test -v ./golang
+	mkdir -p $(TMPNAME)
+	cd golang/gogo && ${GO} test -v .
+	cd golang/protobuf && ${GO} test -v
 
 clean:
 	${GO} clean ./...
@@ -51,7 +52,7 @@ clean:
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
 
 $(TMPNAME): 
-	@mkdir -p $(TMPNAME)
+	mkdir -p $(TMPNAME)
 
 $(GOGO_LINKS): $(GOLANG)-$(GOGO)-%-link: %.proto $(TMPNAME)
 	$(call gen_protoc_link,$<,$@,$(GOGO))
