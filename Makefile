@@ -16,7 +16,8 @@ PKG_PREFIX = github.com/lightstep/lightstep-tracer-common
 
 PROTO_SOURCES = \
 	collector.proto \
-	lightstep.proto
+	lightstep.proto \
+	metrics.proto
 
 TEST_SOURCES = \
 	$(GOLANG)/gogo_test.go \
