@@ -23,7 +23,7 @@ PROTOC_OPTS = plugins=grpc
 
 # These flags manage mapping the google-standard protobuf types (e.g., Timestamp)
 # into the annotated versions supplied with Gogo.  The trailing `,` matters.
-GOGO_OPTS = Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,
+GOGO_OPTS = Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,
 
 define protos_to_gogo_targets
 $(foreach proto,$(1),$(GOLANG)-$(GOGO)-$(basename $(proto)))
