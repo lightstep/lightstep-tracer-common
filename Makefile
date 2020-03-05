@@ -1,5 +1,5 @@
 # tools
-GO = GO111MODULE=on GOPROXY=https://proxy.golang.org go
+MAKE = make
 
 default: build
 
@@ -19,8 +19,8 @@ PROTO_SOURCES = \
 	lightstep.proto
 
 TEST_SOURCES = \
-	$(GOLANG)/gogo_test.go \
-	$(GOLANG)/protobuf_test.go
+	$(GOLANG)/gogo/gogo_test.go \
+	$(GOLANG)/protobuf/protobuf_test.go
 
 GOGO_GENTGTS = $(call protos_to_gogo_targets,$(PROTO_SOURCES))
 PBUF_GENTGTS = $(call protos_to_protobuf_targets,$(PROTO_SOURCES))
@@ -41,11 +41,11 @@ proto: $(GOGO_GENTGTS) $(PBUF_GENTGTS) $(FAKES)
 
 test: $(TEST_SOURCES)
 	@mkdir -p $(TMPNAME)
-	${GO} test -v ./golang
+	${MAKE} -C golang test
 
 clean:
-	${GO} clean ./...
 	rm -rf $(TMPNAME)
+	${MAKE} -C golang clean
 	$(call clean_protoc_targets,$(GOGO_GENTGTS) $(PBUF_GENTGTS))
 
 proto-links: $(GOGO_LINKS) $(PBUF_LINKS)
