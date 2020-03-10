@@ -8,6 +8,7 @@ option java_multiple_files = true;
 option java_package = "com.lightstep.tracer.grpc";
 
 import "github.com/lightstep/lightstep-tracer-common/collector.proto";
+import "google/api/annotations.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -75,3 +76,12 @@ message IngestRequest {
 
 // IngestResponse is reserved for future use.
 message IngestResponse {}
+
+service MetricsService {
+    rpc Report(IngestRequest) returns (IngestResponse) {
+        option (google.api.http) = {
+            post: "/metrics"
+            body: "*"
+        };
+    }
+}
